@@ -36,28 +36,14 @@ export default function OnSaleSection() {
         <div className="grid grid-cols-4 gap-6">
           {rows[0].map((item, idx) => (
             <div key={idx} className="h-full">
-              <ProductCard
-                albumName={item.albumName}
-                artist={item.artist}
-                condition={item.condition}
-                releaseYear={item.releaseYear}
-                price={item.price}
-                salePrice={item.salePrice}
-              />
+              <ProductCard {...item} />
             </div>
           ))}
         </div>
         <div className="grid grid-cols-4 gap-6 mt-6">
           {rows[1].map((item, idx) => (
             <div key={idx} className="h-full">
-              <ProductCard
-                albumName={item.albumName}
-                artist={item.artist}
-                condition={item.condition}
-                releaseYear={item.releaseYear}
-                price={item.price}
-                salePrice={item.salePrice}
-              />
+              <ProductCard {...item} />
             </div>
           ))}
           {showViewMore && (
