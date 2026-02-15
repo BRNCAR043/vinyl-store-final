@@ -33,7 +33,7 @@ export default function HeroSection(): JSX.Element {
           <div className="md:w-1/2 w-full bg-[#f7f1e6] flex items-center">
             <div className="p-8 md:p-12 lg:p-16 w-full">
               <h1 className="text-2xl md:text-3xl lg:text-4xl font-extrabold text-[#4a0f12]">
-                Discover Rock Records With a Story
+                Discover Rock Records
               </h1>
               <p className="mt-4 text-base md:text-lg text-[#25432f] max-w-prose">
                 Finding new and pre-loved rock records from your favourite artists — carefully curated for collectors and music lovers.

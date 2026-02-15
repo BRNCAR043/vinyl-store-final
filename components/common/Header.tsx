@@ -36,6 +36,12 @@ export default function Header() {
               >
                 About
               </Link>
+              <Link
+                href="/admin"
+                className="inline-flex items-center px-4 py-1 rounded-full bg-[#f6efe6] text-[#5a1518] text-sm font-semibold transition-transform hover:scale-[1.02] hover:brightness-95"
+              >
+                Admin
+              </Link>
             </nav>
           </div>
 
