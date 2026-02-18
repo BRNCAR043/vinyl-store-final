@@ -5,6 +5,7 @@ import { getAllVinyls, addVinyl, updateVinyl } from "../../lib/firestoreVinyls";
 import { Vinyl } from "../../types/vinyl";
 import AdminModal from "./AdminModal";
 import AdminProductCard from "../../components/ui/AdminProductCard";
+import AdminGuard from "../../components/ui/AdminGuard";
 
 export default function AdminPage() {
   const [vinyls, setVinyls] = useState<Vinyl[]>([]);
@@ -47,7 +48,8 @@ export default function AdminPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto py-12 px-4">
+    <AdminGuard>
+      <div className="max-w-4xl mx-auto py-12 px-4">
         <h1 className="text-2xl font-bold mb-8">Vinyl Admin</h1>
         {toast && (
           <div className="fixed top-6 right-6 bg-emerald-800 text-white px-5 py-3 rounded-lg shadow-lg z-50 flex items-center gap-3 animate-fade-in">
@@ -81,6 +83,7 @@ export default function AdminPage() {
             />
           ))}
         </div>
-      </div>
+        </div>
+    </AdminGuard>
   );
 }

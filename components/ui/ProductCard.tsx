@@ -2,12 +2,15 @@
 // Placeholder ProductCard for OnSaleSection (not admin)
 import Image from "next/image";
 import type { Vinyl } from "../../types/vinyl";
+import WishlistButton from "./WishlistButton";
+import useCart from "../../lib/useCart";
 
 type Props = {
   product: Vinyl;
 };
 
 export default function ProductCard({ product }: Props) {
+  const { add } = useCart();
   const albumName = product.albumName || product.title || "Unknown";
   const artist = product.artist || "Unknown artist";
   const condition = product.condition || "--";
@@ -16,7 +19,7 @@ export default function ProductCard({ product }: Props) {
   const salePrice = typeof product.salePrice === "number" && !isNaN(product.salePrice) ? product.salePrice : undefined;
 
   return (
-    <div className="rounded-xl bg-[#8a3b42] p-4 flex flex-col items-start text-white transition-transform duration-200 hover:scale-105 min-h-[360px]">
+    <div className="rounded-xl bg-[#8a3b42] p-4 flex flex-col items-start text-white transition-transform duration-200 hover:scale-105 min-h-[360px] relative">
       <div className="w-full flex flex-col items-start">
         <div className="w-full aspect-square mb-3 relative bg-gray-800 rounded overflow-hidden">
           {product.imageUrl ? (
@@ -24,6 +27,9 @@ export default function ProductCard({ product }: Props) {
           ) : (
             <div className="w-full h-full bg-gray-700 flex items-center justify-center text-gray-300">No image</div>
           )}
+          <div className="absolute top-2 right-2">
+            <WishlistButton vinylId={product.id!} />
+          </div>
         </div>
         <h3 className="font-bold text-lg mb-1 text-white" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{albumName}</h3>
         <p className="text-gray-200 text-sm mb-1 truncate w-full">{artist}</p>
@@ -42,7 +48,7 @@ export default function ProductCard({ product }: Props) {
         </div>
         <button
           aria-label="Add to cart"
-          onClick={() => console.log('Add to cart', product.id)}
+          onClick={() => add(product.id!, 1)}
           className="ml-3 inline-flex items-center gap-2 rounded px-3 py-2 bg-[#ffeede] hover:opacity-95">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-[#8a3b42]" stroke="#8a3b42" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M6 6h15l-1.5 9h-11z" />
