@@ -8,7 +8,6 @@ const POSTERS = [
   "/poster3.png",
   "/poster4.png",
   "/poster5.png",
-  "/poster6.png",
 ];
 
 export default function PosterRow() {
@@ -19,7 +18,6 @@ export default function PosterRow() {
     { rotate: '0deg', translateY: '18px', z: 18, left: '46%' },
     { rotate: '6deg', translateY: '-4px', z: 21, left: '64%' },
     { rotate: '-3deg', translateY: '12px', z: 19, left: '82%' },
-    { rotate: '6deg', translateY: '-4px', z: 21, left: '95%' },
   ];
   return (
     <div className="w-full relative flex justify-center mt-12 min-h-[180px] md:min-h-[280px] lg:min-h-[340px]">

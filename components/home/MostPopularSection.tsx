@@ -38,28 +38,14 @@ export default function MostPopularSection() {
         <div className="grid grid-cols-4 gap-6">
           {rows[0].map((item, idx) => (
             <div key={idx} className="h-full">
-              <ProductCard
-                albumName={item.albumName}
-                artist={item.artist}
-                condition={item.condition}
-                releaseYear={item.releaseYear}
-                price={item.price}
-                salePrice={item.salePrice}
-              />
+              <ProductCard product={{ id: String(idx), albumName: item.albumName, artist: item.artist, condition: item.condition, year: item.releaseYear as any, price: item.price, salePrice: item.salePrice }} />
             </div>
           ))}
         </div>
         <div className="grid grid-cols-4 gap-6 mt-6">
           {rows[1].map((item, idx) => (
             <div key={idx} className="h-full">
-              <ProductCard
-                albumName={item.albumName}
-                artist={item.artist}
-                condition={item.condition}
-                releaseYear={item.releaseYear}
-                price={item.price}
-                salePrice={item.salePrice}
-              />
+              <ProductCard product={{ id: String(idx + 4), albumName: item.albumName, artist: item.artist, condition: item.condition, year: item.releaseYear as any, price: item.price, salePrice: item.salePrice }} />
             </div>
           ))}
           {showViewMore && (

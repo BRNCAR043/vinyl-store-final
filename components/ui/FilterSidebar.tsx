@@ -10,10 +10,13 @@ export default function FilterSidebar() {
       <div>
         <label className="block text-sm font-semibold text-[#ffeede] mb-2">Genre</label>
         <div className="grid gap-2 text-sm text-gray-200">
-          <label className="flex items-center gap-2"><input type="checkbox" /> Rock</label>
-          <label className="flex items-center gap-2"><input type="checkbox" /> Jazz</label>
-          <label className="flex items-center gap-2"><input type="checkbox" /> Electronic</label>
-          <label className="flex items-center gap-2"><input type="checkbox" /> Hip Hop</label>
+          <label className="flex items-center gap-2"><input type="checkbox" /> Hard Rock</label>
+          <label className="flex items-center gap-2"><input type="checkbox" /> Progressive Rock</label>
+          <label className="flex items-center gap-2"><input type="checkbox" /> Blues Rock</label>
+          <label className="flex items-center gap-2"><input type="checkbox" /> Alternative Rock</label>
+          <label className="flex items-center gap-2"><input type="checkbox" /> Punk Rock</label>
+          <label className="flex items-center gap-2"><input type="checkbox" /> Heavy Metal</label>
+          <label className="flex items-center gap-2"><input type="checkbox" /> Indie Rock</label>
         </div>
       </div>
 

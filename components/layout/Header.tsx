@@ -25,7 +25,7 @@ export default function Header() {
                 Home
               </Link>
               <Link
-                href="/vinyls"
+                href="/vinyl"
                 className="inline-flex items-center px-4 py-1 rounded-full bg-[#f6efe6] text-[#5a1518] text-sm font-semibold transition-transform hover:scale-[1.02] hover:brightness-95"
               >
                 Vinyls
@@ -71,17 +71,17 @@ export default function Header() {
             <button
               aria-label="Help"
               type="button"
-              className="inline-flex items-center justify-center h-9 w-9 rounded-full bg-[#f6efe6] text-[#5a1518] transition hover:scale-[1.02]"
+              className="inline-flex items-center justify-center p-0 h-9 w-9 rounded-full bg-[#f6efe6] text-[#5a1518] transition hover:scale-[1.02] leading-none"
             >
-              <span className="text-sm font-semibold">?</span>
+              <span className="text-sm font-semibold leading-none">?</span>
             </button>
 
             <button
               aria-label="Account"
               type="button"
-              className="inline-flex items-center justify-center h-9 w-9 rounded-full bg-[#f6efe6] text-[#5a1518] transition hover:scale-[1.02]"
+              className="inline-flex items-center justify-center p-0 h-9 w-9 rounded-full bg-[#f6efe6] text-[#5a1518] transition hover:scale-[1.02] leading-none"
             >
-              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden>
+              <svg className="h-4 w-4 block" viewBox="0 0 24 24" fill="none" aria-hidden>
                 <path stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" d="M12 12a4 4 0 100-8 4 4 0 000 8z" />
                 <path stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" d="M4 20a8 8 0 0116 0" />
               </svg>
@@ -90,9 +90,9 @@ export default function Header() {
             <Link
               href="/cart"
               aria-label="Cart"
-              className="inline-flex items-center justify-center h-9 w-9 rounded-full bg-[#f6efe6] text-[#5a1518] transition hover:scale-[1.02]"
+              className="inline-flex items-center justify-center p-0 h-9 w-9 rounded-full bg-[#f6efe6] text-[#5a1518] transition hover:scale-[1.02] leading-none"
             >
-              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden>
+              <svg className="h-4 w-4 block" viewBox="0 0 24 24" fill="none" aria-hidden>
                 <path stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l3-8H6.4" />
                 <circle cx="9" cy="20" r="1" fill="currentColor" />
                 <circle cx="18" cy="20" r="1" fill="currentColor" />
