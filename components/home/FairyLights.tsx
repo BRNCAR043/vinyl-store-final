@@ -2,7 +2,7 @@
 "use client";
 import React from "react";
 
-export default function FairyLights(): JSX.Element {
+export default function FairyLights(): React.ReactElement {
   const bulbs = new Array(18).fill(null);
 
   return (

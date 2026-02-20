@@ -24,6 +24,25 @@ export default function Header() {
   }, []);
 
   const totalCount = items.reduce((s, i) => s + i.quantity, 0);
+  const [navAccountOpen, setNavAccountOpen] = useState(false);
+  const navCloseTimeout = useRef<number | null>(null);
+
+  const scheduleNavClose = (delay = 200) => {
+    if (navCloseTimeout.current) window.clearTimeout(navCloseTimeout.current);
+    navCloseTimeout.current = window.setTimeout(() => setNavAccountOpen(false), delay);
+  };
+  const cancelNavClose = () => {
+    if (navCloseTimeout.current) {
+      window.clearTimeout(navCloseTimeout.current);
+      navCloseTimeout.current = null;
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (navCloseTimeout.current) window.clearTimeout(navCloseTimeout.current);
+    };
+  }, []);
 
   return (
     <header className="sticky top-0 z-50 bg-[#8a3b42] border-b border-black/20 shadow-sm">
@@ -62,6 +81,30 @@ export default function Header() {
                   Admin
                 </Link>
               )}
+              <div className="relative">
+                <button
+                  type="button"
+                  aria-expanded={navAccountOpen}
+                  aria-haspopup="menu"
+                  onClick={() => setNavAccountOpen((s) => !s)}
+                  onMouseEnter={() => {
+                    cancelNavClose();
+                    setNavAccountOpen(true);
+                  }}
+                  className="inline-flex items-center px-4 py-1 rounded-full bg-[#f6efe6] text-[#5a1518] text-sm font-semibold transition-transform hover:scale-[1.02] hover:brightness-95"
+                >
+                  Account
+                </button>
+                <div
+                  className={`${navAccountOpen ? "" : "hidden"} absolute left-0 mt-2 w-44 bg-[#f6efe6] text-[#5a1518] rounded shadow-lg p-2 z-20`}
+                  onMouseEnter={() => cancelNavClose()}
+                  onMouseLeave={() => scheduleNavClose()}
+                >
+                  <Link href="/account" onClick={() => setNavAccountOpen(false)} className="block px-3 py-2 text-sm hover:bg-[#f0e6d9] rounded">My account</Link>
+                  <Link href="/account?tab=orders" onClick={() => setNavAccountOpen(false)} className="block px-3 py-2 text-sm hover:bg-[#f0e6d9] rounded">My orders</Link>
+                  <Link href="/account?tab=wishlist" onClick={() => setNavAccountOpen(false)} className="block px-3 py-2 text-sm hover:bg-[#f0e6d9] rounded">My wishlist</Link>
+                </div>
+              </div>
             </nav>
           </div>
 
@@ -139,6 +182,7 @@ export default function Header() {
 function UserMenu({ user, signOut }: { user: AuthUser; signOut: () => Promise<void> }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement | null>(null);
+  const userCloseTimeout = useRef<number | null>(null);
 
   useEffect(() => {
     function onDocClick(e: MouseEvent) {
@@ -147,6 +191,12 @@ function UserMenu({ user, signOut }: { user: AuthUser; signOut: () => Promise<vo
     }
     document.addEventListener("click", onDocClick);
     return () => document.removeEventListener("click", onDocClick);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (userCloseTimeout.current) window.clearTimeout(userCloseTimeout.current);
+    };
   }, []);
 
   const handleLogout = async () => {
@@ -172,9 +222,27 @@ function UserMenu({ user, signOut }: { user: AuthUser; signOut: () => Promise<vo
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-48 bg-white text-[#5a1518] rounded shadow-lg p-3 z-10">
+        <div
+          className="absolute right-0 mt-2 w-48 bg-[#f6efe6] text-[#5a1518] rounded shadow-lg p-3 z-10"
+          onMouseEnter={() => {
+            if (userCloseTimeout.current) {
+              window.clearTimeout(userCloseTimeout.current);
+              userCloseTimeout.current = null;
+            }
+            setOpen(true);
+          }}
+          onMouseLeave={() => {
+            if (userCloseTimeout.current) window.clearTimeout(userCloseTimeout.current);
+            userCloseTimeout.current = window.setTimeout(() => setOpen(false), 200);
+          }}
+        >
           <div className="text-sm font-semibold">{user.displayName ?? "Account"}</div>
           {user.email && <div className="text-xs text-gray-600 truncate">{user.email}</div>}
+          <div className="mt-3 space-y-1">
+            <Link href="/account" onClick={() => setOpen(false)} className="block px-2 py-1 text-sm hover:bg-[#f0e6d9] rounded">My account</Link>
+            <Link href="/account?tab=orders" onClick={() => setOpen(false)} className="block px-2 py-1 text-sm hover:bg-[#f0e6d9] rounded">My orders</Link>
+            <Link href="/account?tab=wishlist" onClick={() => setOpen(false)} className="block px-2 py-1 text-sm hover:bg-[#f0e6d9] rounded">My wishlist</Link>
+          </div>
           <div className="mt-3">
             <button
               onClick={handleLogout}

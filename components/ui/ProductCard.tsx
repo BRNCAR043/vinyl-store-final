@@ -46,17 +46,19 @@ export default function ProductCard({ product }: Props) {
             <span className="text-white font-bold">R {price.toFixed(2)}</span>
           )}
         </div>
-        <button
-          aria-label="Add to cart"
-          onClick={() => add(product.id!, 1)}
-          className="ml-3 inline-flex items-center gap-2 rounded px-3 py-2 bg-[#ffeede] hover:opacity-95">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-[#8a3b42]" stroke="#8a3b42" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M6 6h15l-1.5 9h-11z" />
-            <circle cx="9" cy="20" r="1" />
-            <circle cx="18" cy="20" r="1" />
-          </svg>
-          <span className="text-[#8a3b42] font-semibold">Add</span>
-        </button>
+        <div>
+          <button
+            aria-label="Add to cart"
+            onClick={() => add(product.id!, 1)}
+            className="ml-3 inline-flex items-center gap-2 rounded px-3 py-2 bg-[#ffeede] hover:opacity-95">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-[#8a3b42]" stroke="#8a3b42" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M6 6h15l-1.5 9h-11z" />
+              <circle cx="9" cy="20" r="1" />
+              <circle cx="18" cy="20" r="1" />
+            </svg>
+            <span className="text-[#8a3b42] font-semibold">Add</span>
+          </button>
+        </div>
       </div>
     </div>
   );

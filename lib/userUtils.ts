@@ -38,4 +38,9 @@ export async function getUserIsAdmin(uid: string): Promise<boolean> {
   return false;
 }
 
+export async function updateUserProfile(uid: string, profile: Record<string, any>): Promise<void> {
+  const ref = doc(db, "users", uid);
+  await setDoc(ref, profile, { merge: true });
+}
+
 export default { createOrUpdateUserDoc, getUserIsAdmin };
