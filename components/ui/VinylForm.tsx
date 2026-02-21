@@ -21,7 +21,7 @@ export default function VinylForm({ initial = {}, onSubmit, submitLabel = "Save"
     setForm(initial);
   }, [initial]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     // For price fields only allow numbers and dot
     let newVal: any = value;
@@ -52,7 +52,7 @@ export default function VinylForm({ initial = {}, onSubmit, submitLabel = "Save"
     ];
     if (requiredFields.includes(name)) {
       if (!value || value.toString().trim() === "") {
-        newErrors[name] = "This field is required";
+        newErrors[name] = "Please complete this field";
       } else {
         delete newErrors[name];
       }
@@ -90,7 +90,7 @@ export default function VinylForm({ initial = {}, onSubmit, submitLabel = "Save"
     ];
     requiredFields.forEach(f => {
       if (!form[f as keyof Vinyl] && form[f as keyof Vinyl] !== 0) {
-        newErrors[f] = "This field is required";
+        newErrors[f] = "Please complete this field";
       }
     });
     // image required
@@ -98,12 +98,12 @@ export default function VinylForm({ initial = {}, onSubmit, submitLabel = "Save"
       newErrors.image = "Image is required";
     }
     // numeric checks
-    if (form.price === undefined || form.price === "") {
-      newErrors.price = newErrors.price || "Price is required";
+    if (form.price == null || String(form.price).trim() === "") {
+      newErrors.price = newErrors.price || "Please complete this field";
     } else if (isNaN(Number(form.price))) {
       newErrors.price = "Price must be a number";
     }
-    if (form.salePrice !== undefined && form.salePrice !== "") {
+    if (form.salePrice != null && String(form.salePrice).trim() !== "") {
       if (isNaN(Number(form.salePrice))) {
         newErrors.salePrice = "Sale price must be a number";
       }
@@ -127,7 +127,7 @@ export default function VinylForm({ initial = {}, onSubmit, submitLabel = "Save"
     const submitForm = {
       ...form,
       price: form.price !== undefined ? Number(form.price) : 0,
-      salePrice: form.salePrice !== undefined && form.salePrice !== "" ? Number(form.salePrice) : null,
+      salePrice: form.salePrice != null && String(form.salePrice).trim() !== "" ? Number(form.salePrice as any) : null,
       imageUrl,
     };
     try {
@@ -143,40 +143,40 @@ export default function VinylForm({ initial = {}, onSubmit, submitLabel = "Save"
   const conditionOptions = ["Mint", "Near Mint", "VG+", "VG", "Good", "Fair", "Poor"];
   return (
     <form onSubmit={handleSubmit} className="bg-[#f7efe6] rounded-lg shadow p-6 grid grid-cols-2 gap-4">
-      <input name="albumName" value={form.albumName || ""} onChange={handleChange} onBlur={handleBlur} placeholder="Album Name" className={`border p-2 rounded col-span-2 focus:outline-none focus:ring-2 ${errors.albumName ? "ring-red-300 border-red-500" : "focus:ring-emerald-800 hover:ring-2 hover:ring-emerald-800"} transition`} />
-      {errors.albumName && <p className="text-red-600 text-sm col-span-2">{errors.albumName}</p>}
-      <input name="artist" value={form.artist || ""} onChange={handleChange} onBlur={handleBlur} placeholder="Artist" className={`border p-2 rounded col-span-2 focus:outline-none focus:ring-2 ${errors.artist ? "ring-red-300 border-red-500" : "focus:ring-emerald-800 hover:ring-2 hover:ring-emerald-800"} transition`} />
-      {errors.artist && <p className="text-red-600 text-sm col-span-2">{errors.artist}</p>}
-      <input name="year" value={form.year || ""} onChange={handleChange} onBlur={handleBlur} placeholder="Year" className={`border p-2 rounded focus:outline-none focus:ring-2 ${errors.year ? "ring-red-300 border-red-500" : "focus:ring-emerald-800 hover:ring-2 hover:ring-emerald-800"} transition`} />
-      {errors.year && <p className="text-red-600 text-sm">{errors.year}</p>}
-      <select name="condition" value={form.condition || ""} onChange={handleChange} onBlur={handleBlur} className={`border p-2 rounded focus:outline-none focus:ring-2 ${errors.condition ? "ring-red-300 border-red-500" : "focus:ring-emerald-800 hover:ring-2 hover:ring-emerald-800"} transition`}>
+      <input id="albumName" name="albumName" value={form.albumName || ""} onChange={handleChange} onBlur={handleBlur} placeholder="Album Name" aria-invalid={!!errors.albumName} aria-describedby={errors.albumName ? 'albumName-error' : undefined} className={`p-2 rounded col-span-2 focus:outline-none focus:ring-2 transition ${errors.albumName ? 'border-red-600 focus:ring-red-200' : 'border-gray-300 focus:border-[#8a3b42] focus:ring-[#8a3b42] hover:ring-[#8a3b42]'} border`} />
+      {errors.albumName && <p id="albumName-error" role="alert" className="text-red-600 text-sm col-span-2">{errors.albumName}</p>}
+      <input id="artist" name="artist" value={form.artist || ""} onChange={handleChange} onBlur={handleBlur} placeholder="Artist" aria-invalid={!!errors.artist} aria-describedby={errors.artist ? 'artist-error' : undefined} className={`p-2 rounded col-span-2 focus:outline-none focus:ring-2 transition ${errors.artist ? 'border-red-600 focus:ring-red-200' : 'border-gray-300 focus:border-[#8a3b42] focus:ring-[#8a3b42] hover:ring-[#8a3b42]'} border`} />
+      {errors.artist && <p id="artist-error" role="alert" className="text-red-600 text-sm col-span-2">{errors.artist}</p>}
+      <input id="year" name="year" value={form.year || ""} onChange={handleChange} onBlur={handleBlur} placeholder="Year" aria-invalid={!!errors.year} aria-describedby={errors.year ? 'year-error' : undefined} className={`p-2 rounded focus:outline-none focus:ring-2 transition ${errors.year ? 'border-red-600 focus:ring-red-200' : 'border-gray-300 focus:border-[#8a3b42] focus:ring-[#8a3b42] hover:ring-[#8a3b42]'} border`} />
+      {errors.year && <p id="year-error" role="alert" className="text-red-600 text-sm">{errors.year}</p>}
+      <select id="condition" name="condition" value={form.condition || ""} onChange={handleChange} onBlur={handleBlur} aria-invalid={!!errors.condition} aria-describedby={errors.condition ? 'condition-error' : undefined} className={`p-2 rounded focus:outline-none focus:ring-2 transition ${errors.condition ? 'border-red-600 focus:ring-red-200' : 'border-gray-300 focus:border-[#8a3b42] focus:ring-[#8a3b42] hover:ring-[#8a3b42]'} border`}>
         <option value="">Select Condition</option>
         {conditionOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
       </select>
-      {errors.condition && <p className="text-red-600 text-sm">{errors.condition}</p>}
-      <select name="genres" value={form.genres || ""} onChange={handleChange} onBlur={handleBlur} className={`border p-2 rounded col-span-2 focus:outline-none focus:ring-2 ${errors.genres ? "ring-red-300 border-red-500" : "focus:ring-emerald-800 hover:ring-2 hover:ring-emerald-800"} transition`}>
+      {errors.condition && <p id="condition-error" role="alert" className="text-red-600 text-sm">{errors.condition}</p>}
+      <select id="genres" name="genres" value={form.genres || ""} onChange={handleChange} onBlur={handleBlur} aria-invalid={!!errors.genres} aria-describedby={errors.genres ? 'genres-error' : undefined} className={`p-2 rounded col-span-2 focus:outline-none focus:ring-2 transition ${errors.genres ? 'border-red-600 focus:ring-red-200' : 'border-gray-300 focus:border-[#8a3b42] focus:ring-[#8a3b42] hover:ring-[#8a3b42]'} border`}>
         <option value="">Select Genre</option>
         {genreOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
       </select>
-      {errors.genres && <p className="text-red-600 text-sm col-span-2">{errors.genres}</p>}
+      {errors.genres && <p id="genres-error" role="alert" className="text-red-600 text-sm col-span-2">{errors.genres}</p>}
       <div>
-        <input inputMode="numeric" name="price" value={form.price || ""} onChange={handleChange} placeholder="Price (Rands)" className="border p-2 rounded focus:outline-none focus:ring-2 focus:ring-emerald-800 hover:ring-2 hover:ring-emerald-800 transition w-full" />
-        {errors.price && <p className="text-red-600 text-sm mt-1">{errors.price}</p>}
+        <input id="price" inputMode="numeric" name="price" value={form.price || ""} onChange={handleChange} onBlur={handleBlur} placeholder="Price (Rands)" aria-invalid={!!errors.price} aria-describedby={errors.price ? 'price-error' : undefined} className={`p-2 rounded focus:outline-none focus:ring-2 transition w-full ${errors.price ? 'border-red-600 focus:ring-red-200' : 'border-gray-300 focus:border-[#8a3b42] focus:ring-[#8a3b42] hover:ring-[#8a3b42]'} border`} />
+        {errors.price && <p id="price-error" role="alert" className="text-red-600 text-sm mt-1">{errors.price}</p>}
       </div>
       <div>
-        <input inputMode="numeric" name="salePrice" value={form.salePrice || ""} onChange={handleChange} placeholder="Sale Price (Rands)" className="border p-2 rounded focus:outline-none focus:ring-2 focus:ring-emerald-800 hover:ring-2 hover:ring-emerald-800 transition w-full" />
-        {errors.salePrice && <p className="text-red-600 text-sm mt-1">{errors.salePrice}</p>}
+        <input id="salePrice" inputMode="numeric" name="salePrice" value={form.salePrice || ""} onChange={handleChange} onBlur={handleBlur} placeholder="Sale Price (Rands)" aria-invalid={!!errors.salePrice} aria-describedby={errors.salePrice ? 'salePrice-error' : undefined} className={`p-2 rounded focus:outline-none focus:ring-2 transition w-full ${errors.salePrice ? 'border-red-600 focus:ring-red-200' : 'border-gray-300 focus:border-[#8a3b42] focus:ring-[#8a3b42] hover:ring-[#8a3b42]'} border`} />
+        {errors.salePrice && <p id="salePrice-error" role="alert" className="text-red-600 text-sm mt-1">{errors.salePrice}</p>}
       </div>
-      <textarea name="description" value={form.description || ""} onChange={handleChange} onBlur={handleBlur} placeholder="Description" className={`border p-2 rounded col-span-2 focus:outline-none focus:ring-2 ${errors.description ? "ring-red-300 border-red-500" : "focus:ring-emerald-800 hover:ring-2 hover:ring-emerald-800"} transition`} />
-      {errors.description && <p className="text-red-600 text-sm col-span-2">{errors.description}</p>}
+      <textarea id="description" name="description" value={form.description || ""} onChange={handleChange} onBlur={handleBlur} placeholder="Description" aria-invalid={!!errors.description} aria-describedby={errors.description ? 'description-error' : undefined} className={`p-2 rounded col-span-2 focus:outline-none focus:ring-2 transition ${errors.description ? 'border-red-600 focus:ring-red-200' : 'border-gray-300 focus:border-[#8a3b42] focus:ring-[#8a3b42] hover:ring-[#8a3b42]'} border`} />
+      {errors.description && <p id="description-error" role="alert" className="text-red-600 text-sm col-span-2">{errors.description}</p>}
       <div className="col-span-2 flex items-center gap-4">
         <input type="checkbox" name="onSale" checked={!!form.onSale} onChange={e => setForm({ ...form, onSale: e.target.checked })} />
         <label htmlFor="onSale">On Sale</label>
       </div>
       <div className="col-span-2">
         <label className="block mb-2">Image Upload</label>
-        <input type="file" accept="image/*" onChange={handleImage} className={`border p-2 rounded w-full focus:outline-none focus:ring-2 ${errors.image ? "ring-red-300 border-red-500" : "focus:ring-emerald-800 hover:ring-2 hover:ring-emerald-800"} transition`} />
-        {errors.image && <p className="text-red-600 text-sm mt-1">{errors.image}</p>}
+        <input id="image" type="file" accept="image/*" onChange={handleImage} aria-invalid={!!errors.image} aria-describedby={errors.image ? 'image-error' : undefined} className={`p-2 rounded w-full focus:outline-none focus:ring-2 transition ${errors.image ? 'border-red-600 focus:ring-red-200' : 'border-gray-300 focus:border-[#8a3b42] focus:ring-[#8a3b42] hover:ring-[#8a3b42]'} border`} />
+        {errors.image && <p id="image-error" role="alert" className="text-red-600 text-sm mt-1">{errors.image}</p>}
         {form.imageUrl && (
           <img src={form.imageUrl} alt="Preview" className="mt-2 w-32 h-32 object-cover rounded" />
         )}

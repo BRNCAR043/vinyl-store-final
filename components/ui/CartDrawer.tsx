@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import useCart from "../../lib/useCart";
 import { useAuthContext } from "../../lib/AuthContext";
+import { useRouter } from "next/navigation";
 import { useAuthModal } from "./AuthModal";
 import { getVinylById } from "../../lib/firestoreVinyls";
 import type { Vinyl } from "../../types/vinyl";
@@ -10,6 +11,7 @@ export default function CartDrawer({ open, onClose }: { open: boolean; onClose: 
   const { items, loading, remove, update, clear } = useCart();
   const { user } = useAuthContext();
   const { open: openAuthModal } = useAuthModal();
+  const router = useRouter();
 
   const [lookup, setLookup] = useState<Record<string, Vinyl | null>>({});
 
@@ -100,8 +102,12 @@ export default function CartDrawer({ open, onClose }: { open: boolean; onClose: 
                 if (!user) {
                   openAuthModal();
                 } else {
-                  // TODO: navigate to checkout or open checkout flow
-                  alert("Proceeding to checkout (not implemented)");
+                  try {
+                    router.push("/checkout");
+                  } catch (e) {
+                    // fall back to simple navigation
+                    window.location.href = "/checkout";
+                  }
                 }
               }}
               className="flex-1 px-4 py-2 rounded bg-[#5a1518] text-white"

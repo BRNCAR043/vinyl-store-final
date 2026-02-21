@@ -9,6 +9,7 @@ type Props = {
 };
 
 export default function WishlistButton({ vinylId }: Props) {
+  if (!vinylId) return null;
   const { user } = useAuthContext();
   const [inWishlist, setInWishlist] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -42,7 +43,8 @@ export default function WishlistButton({ vinylId }: Props) {
     };
   }, [user, vinylId]);
 
-  const handleClick = async () => {
+  const handleClick = async (e?: React.MouseEvent) => {
+    try { e?.stopPropagation(); } catch {}
     if (!user) {
       open();
       return;
@@ -63,7 +65,7 @@ export default function WishlistButton({ vinylId }: Props) {
 
   return (
     <button
-      onClick={handleClick}
+      onClick={(e) => handleClick(e)}
       disabled={loading}
       aria-pressed={inWishlist}
       title={inWishlist ? "Remove from wishlist" : "Add to wishlist"}

@@ -50,8 +50,15 @@ export default function Header() {
         <div className="flex items-center justify-between h-24 md:h-28">
           {/* Left: Logo + Navigation */}
           <div className="flex items-center gap-4">
-            <Link href="/" aria-label="Home" className="flex items-center">
-              <Image src="/logo.png" alt="Logo" width={96} height={96} priority className="object-contain" />
+            <Link href="/" aria-label="Home" className="flex items-center logo-link">
+              <Image
+                src="/logo.png"
+                alt="Logo"
+                width={96}
+                height={96}
+                priority
+                className="object-contain transition-transform"
+              />
             </Link>
 
             <nav aria-label="Primary" className="hidden md:flex items-center gap-4 ml-6">
