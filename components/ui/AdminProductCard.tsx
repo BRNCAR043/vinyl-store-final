@@ -7,10 +7,11 @@ type AdminProductCardProps = {
   product: Vinyl;
   onDelete?: () => void;
   onEdit?: (vinyl: Vinyl) => void;
+  onUpdated?: () => void;
 };
 
-export default function AdminProductCard({ product, onDelete = () => {}, onEdit = () => {} }: AdminProductCardProps) {
-  const { albumName, artist, price, salePrice, imageUrl } = product;
+export default function AdminProductCard({ product, onDelete = () => {}, onEdit = () => {}, onUpdated = () => {} }: AdminProductCardProps) {
+  const { albumName, artist, price, salePrice, imageUrl, cost, tags } = product;
   const [showDelete, setShowDelete] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
 
@@ -27,6 +28,13 @@ export default function AdminProductCard({ product, onDelete = () => {}, onEdit 
         <div className="p-4 flex-1 flex flex-col">
           <h3 className="text-gray-900 font-semibold text-lg mb-1">{albumName ?? "Untitled"}</h3>
           <p className="text-gray-700 text-sm mb-2">{artist ?? "Unknown Artist"}</p>
+          {tags && Array.isArray(tags) && tags.length > 0 && (
+            <div className="flex gap-2 mb-2">
+              {tags.map((t) => (
+                <span key={t} className="text-xs bg-gray-200 text-gray-800 px-2 py-1 rounded-full">{t}</span>
+              ))}
+            </div>
+          )}
           {salePrice && salePrice > 0 && salePrice < price ? (
             <div className="mb-4 flex items-center gap-2">
               <span className="text-gray-500 line-through text-base">R {price?.toFixed(2) ?? "0.00"}</span>
@@ -34,6 +42,9 @@ export default function AdminProductCard({ product, onDelete = () => {}, onEdit 
             </div>
           ) : (
             <span className="text-emerald-800 font-bold text-lg mb-4">R {price?.toFixed(2) ?? "0.00"}</span>
+          )}
+          {cost != null && (
+            <p className="text-gray-500 text-sm mt-1 mb-4">Cost: R {Number(cost).toFixed(2)}</p>
           )}
           <div className="flex gap-2 mt-auto">
             <button className="bg-emerald-800 text-white px-4 py-2 rounded font-semibold hover:bg-emerald-700" onClick={() => setShowEdit(true)}>Edit</button>
@@ -43,7 +54,7 @@ export default function AdminProductCard({ product, onDelete = () => {}, onEdit 
       </article>
       {showDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white rounded-lg shadow-lg p-8 max-w-sm w-full relative">
+          <div className="bg-white rounded-lg shadow-lg p-8 max-w-sm w-full relative text-[#5a1518]">
             <button className="absolute top-4 right-4 text-[#8a3b42] font-bold text-xl hover:text-[#a94a56]" onClick={() => setShowDelete(false)}>×</button>
             <h2 className="text-lg font-semibold mb-4">Delete Record?</h2>
             <p className="mb-6">Are you sure you want to delete <span className="font-bold">{albumName}</span> by <span className="font-bold">{artist}</span>?</p>
@@ -56,13 +67,22 @@ export default function AdminProductCard({ product, onDelete = () => {}, onEdit 
       )}
       {showEdit && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white rounded-lg shadow-lg p-8 max-w-lg w-full relative">
+          <div className="bg-white rounded-lg shadow-lg p-8 max-w-lg w-full relative text-[#5a1518]">
             <button className="absolute top-4 right-4 text-[#8a3b42] font-bold text-xl hover:text-[#a94a56]" onClick={() => setShowEdit(false)}>×</button>
             <VinylForm
+              key={product.id + "-" + (product.cost ?? "") + "-" + (Array.isArray(product.tags) ? product.tags.join(",") : (product.tags as any) || "")}
               initial={product}
-              onSubmit={vinyl => {
-                onEdit(vinyl);
-                setShowEdit(false);
+              onSubmit={async (vinyl) => {
+                try {
+                  const { updateVinyl } = await import("../../lib/firestoreVinyls");
+                  if (product.id) {
+                    await updateVinyl(product.id, vinyl as any);
+                  }
+                  setShowEdit(false);
+                  if (onUpdated) onUpdated();
+                } catch (err) {
+                  console.error("update from card failed", err);
+                }
               }}
               submitLabel="Update Vinyl"
             />

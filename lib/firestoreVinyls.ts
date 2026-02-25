@@ -5,9 +5,26 @@ import { Vinyl } from "../types/vinyl";
 
 const vinylsRef = collection(db, "vinyls");
 
+// helper to remove undefined fields recursively
+function cleanObject<T extends Record<string, any>>(obj: T): Partial<T> {
+  const out: Partial<T> = {};
+  Object.entries(obj).forEach(([k, v]) => {
+    if (v === undefined) return;
+    if (v && typeof v === "object" && !Array.isArray(v) && !(v instanceof Date)) {
+      const cleaned = cleanObject(v as any);
+      // only set if cleaned has keys
+      if (Object.keys(cleaned).length > 0) out[k as keyof T] = cleaned as any;
+    } else {
+      out[k as keyof T] = v;
+    }
+  });
+  return out;
+}
+
 // CREATE
 export async function addVinyl(vinyl: Vinyl) {
-  const docRef = await addDoc(vinylsRef, vinyl);
+  const safe = cleanObject(vinyl as any);
+  const docRef = await addDoc(vinylsRef, safe as any);
   return docRef.id;
 }
 
@@ -25,7 +42,9 @@ export async function getVinylById(id: string): Promise<Vinyl | null> {
 
 // UPDATE
 export async function updateVinyl(id: string, updates: Partial<Vinyl>) {
-  await updateDoc(doc(vinylsRef, id), updates);
+  const safe = cleanObject(updates as any);
+  if (Object.keys(safe).length === 0) return;
+  await updateDoc(doc(vinylsRef, id), safe as any);
 }
 
 // DELETE
@@ -35,5 +54,6 @@ export async function deleteVinyl(id: string) {
 
 // UPSERT
 export async function upsertVinyl(id: string, vinyl: Vinyl) {
-  await setDoc(doc(vinylsRef, id), vinyl, { merge: true });
+  const safe = cleanObject(vinyl as any);
+  await setDoc(doc(vinylsRef, id), safe as any, { merge: true });
 }

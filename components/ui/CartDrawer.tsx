@@ -103,9 +103,12 @@ export default function CartDrawer({ open, onClose }: { open: boolean; onClose: 
                   openAuthModal();
                 } else {
                   try {
+                    // close the drawer first so UI updates immediately
+                    try { onClose(); } catch (e) {}
                     router.push("/checkout");
                   } catch (e) {
                     // fall back to simple navigation
+                    try { onClose(); } catch (e) {}
                     window.location.href = "/checkout";
                   }
                 }

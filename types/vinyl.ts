@@ -4,6 +4,8 @@ export interface Vinyl {
   artist: string;
   year: number | string;
   price: number;
+  cost?: number;
+  tags?: string[];
   salePrice?: number | null;
   onSale?: boolean;
   condition?: string;

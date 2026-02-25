@@ -97,6 +97,13 @@ export default function ProductPageClient({ vinyl, id }: { vinyl: Vinyl | null; 
           <div className="md:w-1/2 flex flex-col justify-start">
             <h1 className="text-3xl font-bold text-[#5a1518]">{currentVinyl.albumName}</h1>
             <p className="text-sm text-[#3b2f27] mb-4">{currentVinyl.artist}</p>
+            {currentVinyl.tags && Array.isArray(currentVinyl.tags) && currentVinyl.tags.length > 0 && (
+              <div className="flex gap-2 mb-4">
+                {currentVinyl.tags.map((t) => (
+                  <span key={t} className="text-xs bg-[#e9dfd4] text-[#5a1518] px-2 py-1 rounded-full">{t}</span>
+                ))}
+              </div>
+            )}
             <div className="text-2xl font-bold text-[#5a1518] mb-6">R {Number(price).toFixed(2)}</div>
 
             <div className="flex items-center gap-4 mb-6">

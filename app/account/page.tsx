@@ -6,6 +6,7 @@ import { useAuthContext } from "../../lib/AuthContext";
 import { updateUserProfile } from "../../lib/userUtils";
 import { getWishlist, removeFromWishlist } from "../../lib/wishlist";
 import { getVinylById } from "../../lib/firestoreVinyls";
+import { fetchOrdersByUser } from "../../lib/orders";
 import type { Vinyl } from "../../types/vinyl";
 
 export default function AccountPage() {
@@ -22,6 +23,8 @@ export default function AccountPage() {
   const [street, setStreet] = useState("");
   const [city, setCity] = useState("");
   const [country, setCountry] = useState("");
+  const [orders, setOrders] = useState<any[] | null>(null);
+  const [ordersLoading, setOrdersLoading] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -37,6 +40,31 @@ export default function AccountPage() {
     setTab(initialTab);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialTab]);
+
+  useEffect(() => {
+    let mounted = true;
+    async function loadOrders() {
+      if (!user) {
+        if (mounted) setOrders([]);
+        return;
+      }
+      setOrdersLoading(true);
+      try {
+        const recs = await fetchOrdersByUser(user.uid);
+        if (!mounted) return;
+        setOrders(recs);
+      } catch (e) {
+        console.error("Failed to load orders", e);
+        if (mounted) setOrders([]);
+      } finally {
+        if (mounted) setOrdersLoading(false);
+      }
+    }
+    loadOrders();
+    return () => {
+      mounted = false;
+    };
+  }, [user]);
 
   const initial = useMemo(() => {
     if (!user) return "U";
@@ -191,7 +219,33 @@ export default function AccountPage() {
             {tab === "orders" && (
               <div>
                 <h2 className="text-2xl font-semibold mb-4">My purchases</h2>
-                <p className="text-sm">You have no purchases yet.</p>
+                {ordersLoading ? (
+                  <p className="text-sm">Loading purchases...</p>
+                ) : orders && orders.length > 0 ? (
+                  <div className="space-y-3">
+                    {orders.map((o) => {
+                      const created = o.createdAt && typeof o.createdAt.toDate === "function" ? o.createdAt.toDate() : o.createdAt ? new Date(o.createdAt) : null;
+                      const orderDate = created ? created.toLocaleDateString() : "-";
+                      const expected = created ? new Date(created.getTime() + 7 * 24 * 60 * 60 * 1000) : null;
+                      const expectedStr = expected ? expected.toLocaleDateString() : "-";
+                      const productCount = (o.items || []).reduce((s: number, it: any) => s + (it.quantity || 0), 0);
+                      return (
+                        <div key={o.id} className="flex items-center bg-white/80 rounded p-3">
+                          <div className="flex-1">
+                            <div className="font-semibold">Order #{o.id}</div>
+                            <div className="text-sm text-gray-700">{productCount} product(s) • Ordered {orderDate}</div>
+                          </div>
+                          <div className="text-right">
+                            <div className="font-semibold">R {Number(o.total || 0).toFixed(2)}</div>
+                            <div className="text-sm text-gray-600">Expected: {expectedStr}</div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p className="text-sm">You have no purchases yet.</p>
+                )}
               </div>
             )}
 

@@ -1,0 +1,63 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAdmin() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    /* ORDERS (top-level) */
+    match /orders/{orderId} {
+      // Allow creating an order only if authenticated and the order.uid matches the user
+      allow create: if request.auth != null && request.resource.data.uid == request.auth.uid;
+      // Allow reading if owner or admin
+      allow read: if request.auth != null && (resource.data.uid == request.auth.uid || isAdmin());
+      // Only admins can update or delete top-level orders
+      allow update, delete: if isAdmin();
+    }
+
+    /* VINYLS */
+    match /vinyls/{vinylId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    /* USERS */
+    match /users/{userId} {
+
+      // User manages their own profile
+      allow create, read, update, delete: if request.auth != null
+        && request.auth.uid == userId;
+
+      // Admin can read all users
+      allow read: if isAdmin();
+
+      /* ORDERS (subcollection) */
+      match /orders/{orderId} {
+        // Exactly the same logic as wishlists/carts: owner can read/write
+        allow read, write: if request.auth != null
+          && request.auth.uid == userId;
+      }
+    }
+
+    /* CARTS */
+    match /carts/{userId} {
+      allow read, write: if request.auth != null
+        && request.auth.uid == userId;
+    }
+
+    /* WISHLISTS */
+    match /wishlists/{userId} {
+      allow read, write: if request.auth != null
+        && request.auth.uid == userId;
+    }
+
+    /* DENY EVERYTHING ELSE */
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

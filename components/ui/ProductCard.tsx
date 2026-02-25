@@ -37,6 +37,18 @@ export default function ProductCard({ product }: Props) {
         ) : (
           <div className="w-full h-full bg-gray-700 flex items-center justify-center text-gray-300">No image</div>
         )}
+
+        {/* Tags: top-left on the album image */}
+        {product.tags && product.tags.length > 0 && (
+          <div className="absolute top-2 left-2 flex gap-2 z-20">
+            {product.tags.map((t, idx) => (
+              <span key={idx} className="bg-[#8a3b42] text-[#ffeede] text-xs font-semibold px-2 py-1 rounded-md shadow-sm whitespace-nowrap">
+                {t}
+              </span>
+            ))}
+          </div>
+        )}
+
         <div className="absolute top-2 right-2">
           <WishlistButton vinylId={product.id!} />
         </div>

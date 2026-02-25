@@ -8,6 +8,7 @@ import { useAuthContext } from "../../lib/AuthContext";
 import { useAuthModal } from "../../components/ui/AuthModal";
 import { useToast } from "../../components/ui/ToastProvider";
 import { doc, getDoc } from "firebase/firestore";
+import { createOrder } from "../../lib/orders";
 import { db } from "../../lib/firebase";
 import { updateUserProfile } from "../../lib/userUtils";
 
@@ -15,6 +16,7 @@ export default function CheckoutPage() {
   const { items, update, remove } = useCart();
   const [lookup, setLookup] = useState<Record<string, Vinyl | null>>({});
   const [step, setStep] = useState<number>(1);
+  const [confirmedOrder, setConfirmedOrder] = useState<any | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -205,7 +207,7 @@ export default function CheckoutPage() {
             <div className="flex gap-8">
               <section className="flex-1 bg-[#f6efe6] text-[#5a1518] p-6 rounded-lg">
                 <h2 className="text-2xl font-semibold mb-4">Payment</h2>
-                <PaymentForm items={items} subtotal={subtotal} setStep={setStep} lookup={lookup} />
+                <PaymentForm items={items} subtotal={subtotal} setStep={setStep} lookup={lookup} setConfirmedOrder={setConfirmedOrder} />
               </section>
 
               <aside className="w-80 flex-shrink-0 bg-transparent">
@@ -229,7 +231,7 @@ export default function CheckoutPage() {
           ) : step === 4 ? (
             // Step 4: Confirmation
             <div className="flex justify-center">
-              <section className="relative w-full max-w-3xl bg-[#8a3b42] text-white p-12 rounded-lg text-center">
+                <section className="relative w-full max-w-3xl bg-[#8a3b42] text-white p-12 rounded-lg text-center">
                   <ConfirmationFairyLights />
                   <div className="relative z-10">
                     <img src="/logo.png" alt="Rock Roll Records" className="mx-auto w-28 h-28 object-contain mb-6" />
@@ -237,6 +239,45 @@ export default function CheckoutPage() {
                     <p className="text-sm mb-3">Your order has been confirmed. We appreciate your purchase and hope you enjoy your music.</p>
                     <p className="text-sm">If you have any issues, please contact us at <span className="font-medium">+27 21 555 0123</span> or <span className="font-medium">support@rockrollrecords.example</span>.</p>
                   </div>
+                  {confirmedOrder && (
+                    <div className="mt-8 relative z-10 bg-[#f6efe6] text-[#140b08] rounded p-4 text-left">
+                      <h3 className="text-lg font-semibold mb-3">Order summary</h3>
+                      <ul className="space-y-3">
+                        {confirmedOrder.items.map((it: any) => {
+                          const v = lookup?.[it.vinylId] ?? null;
+                          const img = v?.imageUrl ?? it.imageUrl ?? null;
+                          return (
+                            <li key={it.vinylId} className="flex items-center justify-between bg-white/0 p-2 rounded">
+                              <div className="flex items-center gap-3">
+                                <div className="w-12 h-12 rounded overflow-hidden flex-shrink-0 bg-gray-100 flex items-center justify-center">
+                                  {img ? (
+                                    // @ts-ignore
+                                    <img src={img} alt={it.title || it.vinylId} className="w-full h-full object-cover" />
+                                  ) : (
+                                    <div className="text-xs text-gray-500">No image</div>
+                                  )}
+                                </div>
+                                <div>
+                                  <div className="font-medium">{it.title || `Record ${it.vinylId}`}</div>
+                                  <div className="text-sm text-gray-600">{it.quantity} × R {Number(it.unitPrice || 0).toFixed(2)}</div>
+                                </div>
+                              </div>
+                              <div className="text-right font-semibold">R {Number(it.lineTotal || (it.unitPrice * it.quantity) || 0).toFixed(2)}</div>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                      <div className="mt-4 flex items-center justify-between font-bold">
+                        <div>Total</div>
+                        <div>R {Number(confirmedOrder.total || 0).toFixed(2)}</div>
+                      </div>
+                      <div className="mt-2 text-sm text-gray-700">Expected delivery: {(() => {
+                        const created = confirmedOrder.createdAt ? new Date(confirmedOrder.createdAt) : new Date();
+                        const expected = new Date(created.getTime() + 7 * 24 * 60 * 60 * 1000);
+                        return expected.toLocaleDateString();
+                      })()}</div>
+                    </div>
+                  )}
                 </section>
             </div>
           ) : (
@@ -347,11 +388,12 @@ function PayNowButtons({ subtotal, setStep }: { subtotal: number; setStep: (n: n
   );
 }
 
-function PaymentForm({ items, subtotal, setStep, lookup }: any) {
+function PaymentForm({ items, subtotal, setStep, lookup, setConfirmedOrder }: any) {
   const { show } = useToast();
   const [method, setMethod] = useState<string>("card");
   const [card, setCard] = useState({ owner: "", number: "", expiry: "", cvv: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const { user } = useAuthContext();
 
   const setCardField = (k: string, v: string) => {
     setCard((c) => ({ ...c, [k]: v }));
@@ -389,11 +431,53 @@ function PaymentForm({ items, subtotal, setStep, lookup }: any) {
         show("Please complete payment fields.", "error");
         return;
       }
-      // In a real app we'd call payment API here. For now, advance to confirmation.
-      show("Payment successful (simulated).", "success");
-      try {
-        setStep(4);
-      } catch (e) {}
+      // In a real app we'd call payment API here.
+      // For now simulate payment, persist order to Firestore, then advance to confirmation.
+      (async () => {
+        show("Processing order...", "info");
+        if (!user) {
+          show("You must be signed in to place an order.", "error");
+          return;
+        }
+        // build order items with snapshot prices
+        const orderItems = (items || []).map((it: any) => {
+          const v = lookup[it.vinylId];
+          const unitPrice = v ? (v.onSale && v.salePrice ? v.salePrice : v.price) : 0;
+          const title = v ? v.albumName : `Record ${it.vinylId}`;
+          const quantity = it.quantity || 1;
+          return {
+            vinylId: it.vinylId,
+            title,
+            unitPrice,
+            quantity,
+            lineTotal: unitPrice * quantity,
+            imageUrl: v?.imageUrl ?? null,
+          };
+        });
+
+        // delivery info is kept in checkoutState.current
+        const delivery = (checkoutState.current || {}) as any;
+
+        // call createOrder (this will also clear the user's cart on success)
+        try {
+          const createdId = await createOrder(user.uid, orderItems, subtotal, method, delivery);
+          if (!createdId) {
+            show("Failed to save order. Please contact support.", "error");
+            return;
+          }
+          // record order locally for confirmation UI
+          try {
+            setConfirmedOrder({ id: createdId, items: orderItems, total: subtotal, createdAt: new Date().toISOString() });
+          } catch (e) {}
+          show("Payment successful and order saved.", "success");
+          try {
+            setStep(4);
+          } catch (e) {}
+        } catch (e) {
+          console.error("Failed to create order", e);
+          show("Failed to save order.", "error");
+        }
+      })();
     }
     (window as any).addEventListener("checkout:pay", onPayEvent);
     return () => (window as any).removeEventListener("checkout:pay", onPayEvent);
