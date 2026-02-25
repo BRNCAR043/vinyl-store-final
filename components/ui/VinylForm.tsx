@@ -13,6 +13,9 @@ interface VinylFormProps {
 
 export default function VinylForm({ initial = {}, onSubmit, submitLabel = "Save" }: VinylFormProps) {
   const [form, setForm] = useState<Partial<Vinyl>>(initial);
+  const [generating, setGenerating] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [generatedDesc, setGeneratedDesc] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -222,8 +225,53 @@ export default function VinylForm({ initial = {}, onSubmit, submitLabel = "Save"
         <input id="tags" name="tags" value={tagsInput} onChange={e => { setTagsInput(e.target.value); if (errors.tags) { const copy = { ...errors }; delete copy.tags; setErrors(copy); } }} placeholder="Tags (comma separated, up to 3)" aria-invalid={!!errors.tags} aria-describedby={errors.tags ? 'tags-error' : undefined} className={`p-2 rounded w-full focus:outline-none focus:ring-2 transition ${errors.tags ? 'border-red-600 focus:ring-red-200' : 'border-gray-300 focus:border-[#8a3b42] focus:ring-[#8a3b42] hover:ring-[#8a3b42]'} border`} />
         {errors.tags && <p id="tags-error" role="alert" className="text-red-600 text-sm mt-1">{errors.tags}</p>}
       </div>
-      <textarea id="description" name="description" value={form.description || ""} onChange={handleChange} onBlur={handleBlur} placeholder="Description" aria-invalid={!!errors.description} aria-describedby={errors.description ? 'description-error' : undefined} className={`p-2 rounded col-span-2 focus:outline-none focus:ring-2 transition ${errors.description ? 'border-red-600 focus:ring-red-200' : 'border-gray-300 focus:border-[#8a3b42] focus:ring-[#8a3b42] hover:ring-[#8a3b42]'} border`} />
-      {errors.description && <p id="description-error" role="alert" className="text-red-600 text-sm col-span-2">{errors.description}</p>}
+          <div className="col-span-2 flex flex-col gap-2">
+            <div className="flex gap-3 items-start">
+              <textarea id="description" name="description" value={form.description || ""} onChange={handleChange} onBlur={handleBlur} placeholder="Description" aria-invalid={!!errors.description} aria-describedby={errors.description ? 'description-error' : undefined} className={`p-2 rounded flex-1 focus:outline-none focus:ring-2 transition ${errors.description ? 'border-red-600 focus:ring-red-200' : 'border-gray-300 focus:border-[#8a3b42] focus:ring-[#8a3b42] hover:ring-[#8a3b42]'} border`} />
+              <div className="w-40 flex-shrink-0">
+                <button
+                  type="button"
+                  onClick={async () => {
+                    // require albumName
+                    if (!form.albumName || String(form.albumName).trim() === "") {
+                      setErrors({ ...errors, albumName: "Please enter the album title before generating" });
+                      return;
+                    }
+                    setGenerating(true);
+                    try {
+                        const res = await fetch('/api/generate-description', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ title: form.albumName, artist: form.artist || undefined }),
+                        });
+                        let data: any = null;
+                        try { data = await res.json(); } catch (e) { /* ignore parse error */ }
+                        if (res.status === 429) {
+                          setErrors({ ...errors, description: 'OpenAI quota exceeded. Check billing at https://platform.openai.com/account/billing' });
+                          return;
+                        }
+                        if (!res.ok) {
+                          const msg = data?.error || `Generation failed (${res.status})`;
+                          throw new Error(msg);
+                        }
+                        setGeneratedDesc(data?.description || '');
+                      setPreviewOpen(true);
+                    } catch (err: any) {
+                      console.error('Generate failed', err);
+                      const msg = err?.message || String(err) || 'Failed to generate description';
+                      setErrors({ ...errors, description: msg });
+                    } finally {
+                      setGenerating(false);
+                    }
+                  }}
+                  className="w-full bg-[#8a3b42] text-white px-3 py-2 rounded font-medium hover:bg-[#a94a56]"
+                >
+                  {generating ? 'Generating...' : 'Generate'}
+                </button>
+              </div>
+            </div>
+            {errors.description && <p id="description-error" role="alert" className="text-red-600 text-sm">{errors.description}</p>}
+          </div>
       <div className="col-span-2 flex items-center gap-4">
         <input type="checkbox" name="onSale" checked={!!form.onSale} onChange={e => setForm({ ...form, onSale: e.target.checked })} />
         <label htmlFor="onSale">On Sale</label>
@@ -242,6 +290,19 @@ export default function VinylForm({ initial = {}, onSubmit, submitLabel = "Save"
           {isSubmitting ? "Saving..." : submitLabel}
         </button>
       </div>
+      {previewOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/60" onClick={() => setPreviewOpen(false)} />
+          <div className="relative bg-[#f7efe6] text-[#5a1518] rounded-lg p-6 w-full max-w-lg z-10">
+            <h3 className="text-lg font-semibold mb-3">Preview Generated Description</h3>
+            <p className="mb-4">{generatedDesc}</p>
+            <div className="flex justify-end gap-3">
+              <button onClick={() => { setPreviewOpen(false); setGeneratedDesc(null); }} className="px-4 py-2 rounded bg-gray-200 text-[#5a1518]">Cancel</button>
+              <button onClick={() => { if (generatedDesc) setForm({ ...form, description: generatedDesc }); setPreviewOpen(false); setGeneratedDesc(null); }} className="px-4 py-2 rounded bg-[#8a3b42] text-white hover:bg-[#a94a56]">Use Description</button>
+            </div>
+          </div>
+        </div>
+      )}
     </form>
   );
 }
