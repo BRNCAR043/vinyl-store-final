@@ -1,5 +1,6 @@
 // app/page.tsx
 import HeroSection from "../components/home/HeroSection";
+import AISearchSection from "../components/home/AISearchSection";
 import Decorations from "../components/home/Decorations";
 import OnSaleSection from "../components/home/OnSaleSection";
 import PosterRow from "../components/home/PosterRow";
@@ -15,6 +16,7 @@ export default function Home() {
       <div className="min-h-screen">
         <FairyLights />
         <HeroSection />
+        <AISearchSection />
         <CrateFlipSection />
         <OnSaleSection />
         <BrandNewSection />

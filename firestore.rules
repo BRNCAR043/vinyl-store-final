@@ -3,20 +3,11 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    /* Helper function */
     function isAdmin() {
       return request.auth != null
         && exists(/databases/$(database)/documents/users/$(request.auth.uid))
         && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
-    }
-
-    /* ORDERS (top-level) */
-    match /orders/{orderId} {
-      // Allow creating an order only if authenticated and the order.uid matches the user
-      allow create: if request.auth != null && request.resource.data.uid == request.auth.uid;
-      // Allow reading if owner or admin
-      allow read: if request.auth != null && (resource.data.uid == request.auth.uid || isAdmin());
-      // Only admins can update or delete top-level orders
-      allow update, delete: if isAdmin();
     }
 
     /* VINYLS */
@@ -37,7 +28,7 @@ service cloud.firestore {
 
       /* ORDERS (subcollection) */
       match /orders/{orderId} {
-        // Exactly the same logic as wishlists/carts: owner can read/write
+        // Exactly the same logic as wishlists/carts
         allow read, write: if request.auth != null
           && request.auth.uid == userId;
       }
