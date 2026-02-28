@@ -8,10 +8,10 @@ type Props = {
 
 export default function ProductGrid({ products = [], title }: Props) {
   const fallback: Vinyl[] = [
-    { id: "a1", title: "Sample A", artist: "Artist A", price: 18.0, image: "/vinyl1.jpg" },
-    { id: "a2", title: "Sample B", artist: "Artist B", price: 22.0, image: "/vinyl2.jpg" },
-    { id: "a3", title: "Sample C", artist: "Artist C", price: 24.5, image: "/vinyl3.jpg" },
-    { id: "a4", title: "Sample D", artist: "Artist D", price: 20.0, image: "/vinyl4.jpg" },
+    { id: "a1", albumName: "Sample A", artist: "Artist A", year: 2020, price: 18.0, imageUrl: "/vinyl1.jpg" },
+    { id: "a2", albumName: "Sample B", artist: "Artist B", year: 2020, price: 22.0, imageUrl: "/vinyl2.jpg" },
+    { id: "a3", albumName: "Sample C", artist: "Artist C", year: 2020, price: 24.5, imageUrl: "/vinyl3.jpg" },
+    { id: "a4", albumName: "Sample D", artist: "Artist D", year: 2020, price: 20.0, imageUrl: "/vinyl4.jpg" },
   ];
 
   const list = products.length ? products : fallback;

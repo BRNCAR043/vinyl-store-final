@@ -56,7 +56,7 @@ export default function OurVinyls() {
         setItems([]);
       } else {
         // map API results to Vinyl-ish objects for ProductCard
-        const mapped = json.results.map((r: any) => ({ id: r.id, title: r.vinyl.title || r.vinyl.albumName || null, artist: r.vinyl.artist, price: r.vinyl.price, imageUrl: r.vinyl.imageUrl, description: r.vinyl.description } as Vinyl));
+        const mapped = json.results.map((r: any) => ({ id: r.id, albumName: r.vinyl.title || r.vinyl.albumName || "", artist: r.vinyl.artist, year: r.vinyl.year ?? "", price: r.vinyl.price, imageUrl: r.vinyl.imageUrl, description: r.vinyl.description } as Vinyl));
         setItems(mapped);
       }
     } catch (e: any) {

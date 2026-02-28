@@ -12,7 +12,7 @@ type Props = {
 
 export default function ProductCard({ product }: Props) {
   const { add } = useCart();
-  const albumName = product.albumName || product.title || "Unknown";
+  const albumName = product.albumName || (product as any).title || "Unknown";
   const artist = product.artist || "Unknown artist";
   const condition = product.condition || "--";
   const releaseYear = product.year || (product as any).releaseYear || "-";

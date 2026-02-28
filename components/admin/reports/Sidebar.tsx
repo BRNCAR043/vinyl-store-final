@@ -1,13 +1,20 @@
 "use client";
 
 import React from "react";
+import { useRouter } from "next/navigation";
 import { FaChartLine, FaBoxOpen, FaUsers } from "react-icons/fa";
 
-type Tab = "financial" | "product" | "customer";
+export type Tab = "financial" | "product" | "customer";
 
 type SidebarProps = {
   activeTab: Tab;
-  onTabChange: (tab: Tab) => void;
+  onTabChange?: (tab: Tab) => void;
+};
+
+const tabRoutes: Record<Tab, string> = {
+  financial: "/admin/reports/financial",
+  product: "/admin/reports/product",
+  customer: "/admin/reports/financial", // placeholder until customer report exists
 };
 
 const tabs: { key: Tab; label: string; icon: React.ReactNode }[] = [
@@ -17,6 +24,13 @@ const tabs: { key: Tab; label: string; icon: React.ReactNode }[] = [
 ];
 
 export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
+  const router = useRouter();
+
+  const handleClick = (tab: Tab) => {
+    if (onTabChange) onTabChange(tab);
+    router.push(tabRoutes[tab]);
+  };
+
   return (
     <aside className="w-64 min-h-screen bg-[#F5E6D3] border-r border-[#d6c4b0] flex flex-col py-8 px-4 gap-2 shrink-0">
       <h2 className="text-lg font-bold text-black mb-6 px-3 tracking-wide">
@@ -27,7 +41,7 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
         return (
           <button
             key={tab.key}
-            onClick={() => onTabChange(tab.key)}
+            onClick={() => handleClick(tab.key)}
             className={`flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-all w-full ${
               isActive
                 ? "bg-[#8a3b42] text-[#F5E6D3] shadow-md font-semibold"

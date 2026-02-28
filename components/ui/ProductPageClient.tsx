@@ -6,6 +6,7 @@ import { useAuthContext } from "../../lib/AuthContext";
 import { getWishlist, toggleWishlist } from "../../lib/wishlist";
 import { useAuthModal } from "./AuthModal";
 import { getVinylById } from "../../lib/firestoreVinyls";
+import { incrementProductView } from "../../lib/productAnalytics";
 
 export default function ProductPageClient({ vinyl, id }: { vinyl: Vinyl | null; id: string }) {
   const [quantity, setQuantity] = useState(1);
@@ -31,6 +32,12 @@ export default function ProductPageClient({ vinyl, id }: { vinyl: Vinyl | null; 
     loadWishlist();
     return () => { mounted = false; };
   }, [user, id]);
+
+  // Track product view once on mount
+  useEffect(() => {
+    if (id) incrementProductView(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   useEffect(() => {
     let mounted = true;

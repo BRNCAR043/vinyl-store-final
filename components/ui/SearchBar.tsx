@@ -1,8 +1,20 @@
 "use client";
 import { useState } from "react";
 
-export default function SearchBar() {
+type SearchBarProps = {
+  placeholder?: string;
+  onSearch?: (query: string | undefined) => void;
+};
+
+export default function SearchBar({ placeholder = "Search records, artists...", onSearch }: SearchBarProps) {
   const [q, setQ] = useState("");
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && onSearch) {
+      onSearch(q || undefined);
+    }
+  };
+
   return (
     <div className="flex items-center bg-[#0b0808]/70 rounded-md px-3 py-2 border border-black/20">
       <svg className="w-5 h-5 text-gray-300 mr-2" viewBox="0 0 24 24" fill="none">
@@ -11,7 +23,8 @@ export default function SearchBar() {
       <input
         value={q}
         onChange={(e) => setQ(e.target.value)}
-        placeholder="Search records, artists..."
+        onKeyDown={handleKeyDown}
+        placeholder={placeholder}
         className="bg-transparent outline-none placeholder:text-gray-400 text-sm text-white flex-1"
         aria-label="Search records"
       />

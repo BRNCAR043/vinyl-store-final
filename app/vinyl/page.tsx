@@ -64,10 +64,11 @@ export default function VinylPage() {
     if (vinyls) {
       vinyls.forEach((v) => {
         if (v.genres) {
-          if (typeof v.genres === "string") {
-            v.genres.split(",").map((g) => g.trim()).forEach((g) => g && s.add(g));
-          } else if (Array.isArray(v.genres)) {
-            v.genres.forEach((g: any) => g && s.add(String(g)));
+          const raw: unknown = v.genres;
+          if (typeof raw === "string") {
+            raw.split(",").map((g) => g.trim()).forEach((g) => g && s.add(g));
+          } else if (Array.isArray(raw)) {
+            (raw as string[]).forEach((g) => g && s.add(String(g)));
           }
         }
       });

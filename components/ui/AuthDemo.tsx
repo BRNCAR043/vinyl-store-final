@@ -4,7 +4,7 @@ import useAuth from "../../lib/useAuth";
 import { signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { auth } from "../../lib/firebase";
 
-export default function AuthDemo(): JSX.Element {
+export default function AuthDemo(): React.ReactElement {
   const user = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

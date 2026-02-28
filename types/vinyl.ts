@@ -12,4 +12,7 @@ export interface Vinyl {
   genres?: string;
   description?: string;
   imageUrl?: string;
+  totalSold?: number;
+  totalRevenue?: number;
+  totalViews?: number;
 }

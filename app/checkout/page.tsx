@@ -11,6 +11,7 @@ import { doc, getDoc } from "firebase/firestore";
 import { createOrder } from "../../lib/orders";
 import { db } from "../../lib/firebase";
 import { updateUserProfile } from "../../lib/userUtils";
+import { updateProductAnalyticsAfterOrder } from "../../lib/productAnalytics";
 
 export default function CheckoutPage() {
   const { items, update, remove } = useCart();
@@ -468,6 +469,14 @@ function PaymentForm({ items, subtotal, setStep, lookup, setConfirmedOrder }: an
             show("Failed to save order. Please contact support.", "error");
             return;
           }
+          // update product analytics (totalSold + totalRevenue)
+          updateProductAnalyticsAfterOrder(
+            orderItems.map((oi: any) => ({
+              productId: oi.vinylId,
+              quantity: oi.quantity,
+              priceAtPurchase: oi.unitPrice,
+            }))
+          );
           // record order locally for confirmation UI
           try {
             setConfirmedOrder({ id: createdId, items: orderItems, total: subtotal, createdAt: new Date().toISOString() });

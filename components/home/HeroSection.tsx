@@ -3,7 +3,7 @@
 import Link from "next/link";
 import React from "react";
 
-export default function HeroSection(): JSX.Element {
+export default function HeroSection(): React.ReactElement {
   return (
     <section
       aria-label="Hero — Discover Rock Records"
