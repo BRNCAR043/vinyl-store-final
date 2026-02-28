@@ -17,8 +17,10 @@ export type OrderItem = {
   vinylId: string;
   title?: string;
   unitPrice: number;
+  unitCost?: number;
   quantity: number;
   lineTotal: number;
+  lineCost?: number;
 };
 
 export type OrderRecord = {
@@ -26,6 +28,8 @@ export type OrderRecord = {
   uid: string;
   items: OrderItem[];
   total: number;
+  totalCost?: number;
+  totalProfit?: number;
   paymentMethod?: string;
   delivery?: any;
   status: "pending" | "paid" | "fulfilled" | "cancelled";
@@ -38,10 +42,16 @@ const userOrdersCollection = (uid: string) => collection(db, "users", uid, "orde
 // Create an order for a user and clear their cart
 export async function createOrder(uid: string, items: OrderItem[], total: number, paymentMethod?: string, delivery?: any): Promise<string | null> {
   if (!uid) throw new Error("AUTH_REQUIRED");
+
+  const totalCost = items.reduce((sum, item) => sum + (item.lineCost ?? 0), 0);
+  const totalProfit = total - totalCost;
+
   const payload = {
     uid,
     items,
     total,
+    totalCost,
+    totalProfit,
     paymentMethod: paymentMethod ?? null,
     delivery: delivery ?? null,
     status: "paid",

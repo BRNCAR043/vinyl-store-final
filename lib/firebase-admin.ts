@@ -5,7 +5,7 @@ import { getFirestore, Firestore } from "firebase-admin/firestore";
 let app: App;
 let adminDb: Firestore;
 
-function getAdminApp(): App {
+export function getAdminApp(): App {
   if (getApps().length > 0) {
     return getApps()[0];
   }

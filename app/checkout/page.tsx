@@ -443,14 +443,17 @@ function PaymentForm({ items, subtotal, setStep, lookup, setConfirmedOrder }: an
         const orderItems = (items || []).map((it: any) => {
           const v = lookup[it.vinylId];
           const unitPrice = v ? (v.onSale && v.salePrice ? v.salePrice : v.price) : 0;
+          const unitCost = v?.cost ?? 0;
           const title = v ? v.albumName : `Record ${it.vinylId}`;
           const quantity = it.quantity || 1;
           return {
             vinylId: it.vinylId,
             title,
             unitPrice,
+            unitCost,
             quantity,
             lineTotal: unitPrice * quantity,
+            lineCost: unitCost * quantity,
             imageUrl: v?.imageUrl ?? null,
           };
         });
