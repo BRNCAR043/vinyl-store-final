@@ -131,8 +131,8 @@ export default function AISearchSection() {
     <section className="py-16 px-4 md:px-8 lg:px-16">
       <div className="max-w-7xl mx-auto">
         {/* Section Title */}
-        <h2 className="text-4xl md:text-5xl font-bold text-center mb-4 text-white font-anton">
-          DISCOVER YOUR PERFECT VINYL
+        <h2 className="text-4xl md:text-5xl font-bold text-center mb-4 text-#ffeede font-anton">
+          Discover Your Perfect Vinyl
         </h2>
         <p className="text-center text-gray-300 mb-8 text-lg">
           Tell us what you&apos;re in the mood for, or upload an image to find matching records
@@ -147,7 +147,7 @@ export default function AISearchSection() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="e.g., 'I want something to make me dance' or paste an image (Ctrl+V)"
+              placeholder="e.g., 'I want something to make me dance'"
               className="w-full px-6 py-4 rounded-lg text-lg bg-[#ffeede] text-[#2d1f1f] placeholder-[#8a6b6b] border-2 border-[#8a3b42]/30 focus:border-[#8a3b42] focus:outline-none transition-colors"
             />
             

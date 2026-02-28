@@ -50,7 +50,7 @@ export default function ProductCard({ product }: Props) {
         )}
 
         <div className="absolute top-2 right-2">
-          <WishlistButton vinylId={product.id!} />
+          <WishlistButton vinylId={product.id!} compact />
         </div>
       </div>
       <h3 className="font-bold text-lg mb-1 text-white" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{albumName}</h3>

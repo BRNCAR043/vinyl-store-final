@@ -71,7 +71,7 @@ export default function OurVinyls() {
     <section className="py-8">
       <div className="max-w-7xl mx-auto px-6">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-3xl font-extrabold text-white">Our Vinyls</h2>
+          <h2 className="text-4xl md:text-5xl font-bold text-#ffeede font-anton mb-4">Our Vinyls</h2>
         </div>
 
         <div className="mb-6">

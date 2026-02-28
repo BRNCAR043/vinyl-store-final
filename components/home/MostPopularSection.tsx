@@ -33,7 +33,7 @@ export default function MostPopularSection() {
     <section className="py-2">
       <div className="max-w-7xl mx-auto px-6">
         <div className="mb-6">
-          <h2 className="text-3xl font-extrabold font-semibold text-[#f7efe6]">Most Popular</h2>
+          <h2 className="text-4xl md:text-5xl font-bold text-#ffeede font-anton mb-4">Most Popular</h2>
         </div>
         <div className="grid grid-cols-4 gap-6">
           {rows[0].map((item, idx) => (

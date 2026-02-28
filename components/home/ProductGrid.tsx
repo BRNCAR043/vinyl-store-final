@@ -18,7 +18,7 @@ export default function ProductGrid({ products = [], title }: Props) {
 
   return (
     <section className="py-12">
-      {title && <h3 className="text-2xl font-semibold mb-6 text-[#ffeede]">{title}</h3>}
+      {title && <h3 className="text-4xl md:text-5xl font-bold text-#ffeede font-anton mb-6">{title}</h3>}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
         {list.map((p) => (
           <ProductCard key={p.id} product={p} />

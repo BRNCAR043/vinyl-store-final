@@ -19,10 +19,8 @@ export default function Home() {
         <AISearchSection />
         <CrateFlipSection />
         <OnSaleSection />
+        <PosterRow />
         <BrandNewSection />
-        <PosterRow />
-        <MostPopularSection />
-        <PosterRow />
       </div>
     </main>
   );

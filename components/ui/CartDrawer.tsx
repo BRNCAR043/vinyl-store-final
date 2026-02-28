@@ -49,7 +49,6 @@ export default function CartDrawer({ open, onClose }: { open: boolean; onClose: 
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold">Your Cart</h3>
           <div className="flex items-center gap-2">
-            <button type="button" onClick={async () => { await clear(); }} className="text-sm hover:underline">Clear</button>
             <button type="button" onClick={onClose} className="text-sm hover:underline">Close</button>
           </div>
         </div>
@@ -66,7 +65,7 @@ export default function CartDrawer({ open, onClose }: { open: boolean; onClose: 
             const price = v ? (v.onSale && v.salePrice ? v.salePrice : v.price) : 0;
             return (
               <li key={it.vinylId} className="flex items-center justify-between bg-white/80 p-3 rounded">
-                <div className="flex items-center gap-3 flex-1">
+                <div className="flex items-center gap-3 flex-1 min-w-0">
                   <div className="w-16 h-16 bg-gray-200 rounded overflow-hidden flex-shrink-0">
                     {img ? (
                       // @ts-ignore allow external URLs
@@ -75,16 +74,41 @@ export default function CartDrawer({ open, onClose }: { open: boolean; onClose: 
                       <div className="w-full h-full bg-gray-300 flex items-center justify-center text-xs">No image</div>
                     )}
                   </div>
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <div className="font-semibold text-sm truncate">{title}</div>
                     <div className="text-xs text-gray-600">R {price.toFixed(2)}</div>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 ml-3">
-                  <button onClick={() => update(it.vinylId, it.quantity - 1)} className="px-2 py-1 bg-[#8a3b42] text-white rounded">-</button>
+                <div className="flex items-center gap-2 ml-3 flex-shrink-0">
+                  <button
+                    onClick={() => update(it.vinylId, it.quantity - 1)}
+                    className="w-8 h-8 flex items-center justify-center bg-[#8a3b42] text-white rounded hover:bg-[#6f2e32] transition-colors duration-150 text-sm flex-shrink-0"
+                    aria-label="Decrease quantity"
+                  >
+                    -
+                  </button>
                   <div className="px-2">{it.quantity}</div>
-                  <button onClick={() => update(it.vinylId, it.quantity + 1)} className="px-2 py-1 bg-[#8a3b42] text-white rounded">+</button>
-                  <button onClick={() => remove(it.vinylId)} className="px-2 py-1 bg-red-600 text-white rounded">Remove</button>
+                  <button
+                    onClick={() => update(it.vinylId, it.quantity + 1)}
+                    className="w-8 h-8 flex items-center justify-center bg-[#8a3b42] text-white rounded hover:bg-[#6f2e32] transition-colors duration-150 text-sm flex-shrink-0"
+                    aria-label="Increase quantity"
+                  >
+                    +
+                  </button>
+                  <button
+                    onClick={() => remove(it.vinylId)}
+                    className="w-8 h-8 flex items-center justify-center rounded text-[#5a1518] hover:bg-[#5a1518] hover:text-white transition-colors duration-150 flex-shrink-0"
+                    aria-label="Remove item"
+                    title="Remove"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+                      <polyline points="3 6 5 6 21 6" />
+                      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                      <path d="M10 11v6" />
+                      <path d="M14 11v6" />
+                      <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" />
+                    </svg>
+                  </button>
                 </div>
               </li>
             );
@@ -96,26 +120,31 @@ export default function CartDrawer({ open, onClose }: { open: boolean; onClose: 
             <div className="text-sm font-medium">Total</div>
             <div className="text-sm font-bold">R {total.toFixed(2)}</div>
           </div>
-          <div className="flex gap-3">
+          <div className="flex flex-col gap-2">
             <button
               onClick={() => {
                 if (!user) {
                   openAuthModal();
                 } else {
                   try {
-                    // close the drawer first so UI updates immediately
                     try { onClose(); } catch (e) {}
                     router.push("/checkout");
                   } catch (e) {
-                    // fall back to simple navigation
                     try { onClose(); } catch (e) {}
                     window.location.href = "/checkout";
                   }
                 }
               }}
-              className="flex-1 px-4 py-2 rounded bg-[#5a1518] text-white"
+              className="w-full px-4 py-2 rounded bg-[#5a1518] text-white hover:bg-[#451013] transition-colors duration-150"
             >
               Proceed to Checkout
+            </button>
+
+            <button
+              onClick={async () => { await clear(); }}
+              className="w-full px-4 py-2 rounded bg-white border border-[#5a1518] text-[#5a1518] hover:bg-gray-200 hover:text-[#5a1518] transition-colors duration-150"
+            >
+              Clear Cart
             </button>
           </div>
         </div>
