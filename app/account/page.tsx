@@ -2,12 +2,27 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { db } from "../../lib/firebase";
 import { useAuthContext } from "../../lib/AuthContext";
 import { updateUserProfile } from "../../lib/userUtils";
 import { getWishlist, removeFromWishlist } from "../../lib/wishlist";
 import { getVinylById } from "../../lib/firestoreVinyls";
 import { fetchOrdersByUser } from "../../lib/orders";
 import type { Vinyl } from "../../types/vinyl";
+
+const GENDER_OPTIONS = ["Male", "Female", "Non-binary", "Prefer not to say"] as const;
+
+interface UserProfile {
+  firstName: string;
+  lastName: string;
+  email: string;
+  street: string;
+  city: string;
+  country: string;
+  age: number | "";
+  gender: string;
+}
 
 export default function AccountPage() {
   const { user } = useAuthContext();
@@ -16,6 +31,9 @@ export default function AccountPage() {
   const [tab, setTab] = useState<string>(initialTab);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [profileLoading, setProfileLoading] = useState(true);
+  const [successMsg, setSuccessMsg] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -23,16 +41,61 @@ export default function AccountPage() {
   const [street, setStreet] = useState("");
   const [city, setCity] = useState("");
   const [country, setCountry] = useState("");
+  const [age, setAge] = useState<number | "">("");
+  const [gender, setGender] = useState("");
   const [orders, setOrders] = useState<any[] | null>(null);
   const [ordersLoading, setOrdersLoading] = useState(false);
 
+  // Fetch user document from Firestore and prefill fields
   useEffect(() => {
-    if (!user) return;
-    const parts = (user.displayName ?? "").split(" ");
-    setFirstName(parts[0] ?? "");
-    setLastName(parts.slice(1).join(" ") ?? "");
-    setEmail(user.email ?? "");
-    // address fields will be loaded later when orders placed; leave blank for now
+    if (!user) {
+      setProfileLoading(false);
+      return;
+    }
+    let mounted = true;
+    async function loadProfile() {
+      setProfileLoading(true);
+      try {
+        const ref = doc(db, "users", user!.uid);
+        const snap = await getDoc(ref);
+        if (snap.exists()) {
+          const data = snap.data() as Record<string, any>;
+          if (mounted) {
+            setFirstName(data.firstName ?? (user!.displayName ?? "").split(" ")[0] ?? "");
+            setLastName(data.lastName ?? (user!.displayName ?? "").split(" ").slice(1).join(" ") ?? "");
+            setEmail(data.email ?? user!.email ?? "");
+            setStreet(data.address?.street ?? data.street ?? "");
+            setCity(data.address?.city ?? data.city ?? "");
+            setCountry(data.address?.country ?? data.country ?? "");
+            setAge(typeof data.age === "number" ? data.age : "");
+            setGender(data.gender ?? "");
+          }
+        } else {
+          // Document doesn't exist — create it and use auth defaults
+          const defaultData = {
+            uid: user!.uid,
+            email: user!.email ?? "",
+            displayName: user!.displayName ?? "",
+            createdAt: new Date().toISOString(),
+            role: "user",
+          };
+          await setDoc(ref, defaultData);
+          if (mounted) {
+            const parts = (user!.displayName ?? "").split(" ");
+            setFirstName(parts[0] ?? "");
+            setLastName(parts.slice(1).join(" ") ?? "");
+            setEmail(user!.email ?? "");
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load profile", err);
+        if (mounted) setErrorMsg("Failed to load profile data.");
+      } finally {
+        if (mounted) setProfileLoading(false);
+      }
+    }
+    loadProfile();
+    return () => { mounted = false; };
   }, [user]);
 
   useEffect(() => {
@@ -71,11 +134,26 @@ export default function AccountPage() {
     return (user.displayName ?? user.email ?? "U").charAt(0).toUpperCase();
   }, [user]);
 
+  // Clear messages after timeout
+  useEffect(() => {
+    if (!successMsg) return;
+    const t = setTimeout(() => setSuccessMsg(""), 3000);
+    return () => clearTimeout(t);
+  }, [successMsg]);
+
+  useEffect(() => {
+    if (!errorMsg) return;
+    const t = setTimeout(() => setErrorMsg(""), 5000);
+    return () => clearTimeout(t);
+  }, [errorMsg]);
+
   const saveProfile = async () => {
     if (!user) return;
     setSaving(true);
+    setSuccessMsg("");
+    setErrorMsg("");
     try {
-      const profileData = {
+      const profileData: Record<string, any> = {
         firstName: firstName || "",
         lastName: lastName || "",
         email: email || "",
@@ -84,16 +162,29 @@ export default function AccountPage() {
           city: city || "",
           country: country || "",
         },
+        gender: gender || "",
         displayName: `${firstName} ${lastName}`.trim(),
-      } as Record<string, any>;
+      };
+      if (age !== "" && typeof age === "number") {
+        profileData.age = age;
+      } else {
+        profileData.age = null;
+      }
       await updateUserProfile(user.uid, profileData);
       setEditing(false);
+      setSuccessMsg("Profile updated successfully!");
     } catch (err) {
       console.error("Failed to save profile", err);
+      setErrorMsg("Failed to save profile. Please try again.");
     } finally {
       setSaving(false);
     }
   };
+
+  const inputBase =
+    "mt-1 w-full rounded-lg px-3 py-2 border border-neutral-300 transition-all duration-150";
+  const inputEnabled = `${inputBase} bg-white focus:outline-none focus:ring-2 focus:ring-[#800000] focus:border-[#800000]`;
+  const inputDisabled = `${inputBase} bg-white/50 cursor-not-allowed`;
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -134,12 +225,34 @@ export default function AccountPage() {
             </div>
           </aside>
 
-          <section className="flex-1 bg-[#f6efe6] rounded p-6 text-[#140b08]">
+          <section className="flex-1 bg-[#F5E6D3] rounded-2xl shadow-lg p-8 text-[#140b08]">
             {tab === "details" && (
               <div>
                 <h2 className="text-2xl font-semibold mb-4">Account details</h2>
 
-                <div className={`space-y-4 transition-shadow`}>
+                {/* Success / Error banners */}
+                {successMsg && (
+                  <div className="mb-4 rounded-lg bg-green-100 border border-green-400 text-green-800 px-4 py-2 text-sm font-medium">
+                    {successMsg}
+                  </div>
+                )}
+                {errorMsg && (
+                  <div className="mb-4 rounded-lg bg-red-100 border border-red-400 text-red-800 px-4 py-2 text-sm font-medium">
+                    {errorMsg}
+                  </div>
+                )}
+
+                {profileLoading ? (
+                  <div className="flex items-center justify-center py-12">
+                    <svg className="animate-spin h-8 w-8 text-[#800000]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                    <span className="ml-3 text-sm text-gray-600">Loading profile...</span>
+                  </div>
+                ) : (
+                <div className="space-y-4">
+                  {/* Name fields */}
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium">Name</label>
@@ -147,7 +260,7 @@ export default function AccountPage() {
                         value={firstName}
                         onChange={(e) => setFirstName(e.target.value)}
                         disabled={!editing}
-                        className={`mt-1 w-full rounded px-3 py-2 border ${editing ? 'ring-2 ring-[#8a3b42] bg-white' : 'bg-white/50'}`}
+                        className={editing ? inputEnabled : inputDisabled}
                       />
                     </div>
                     <div>
@@ -156,21 +269,67 @@ export default function AccountPage() {
                         value={lastName}
                         onChange={(e) => setLastName(e.target.value)}
                         disabled={!editing}
-                        className={`mt-1 w-full rounded px-3 py-2 border ${editing ? 'ring-2 ring-[#8a3b42] bg-white' : 'bg-white/50'}`}
+                        className={editing ? inputEnabled : inputDisabled}
                       />
                     </div>
                   </div>
 
+                  {/* Email (read-only) */}
                   <div>
                     <label className="block text-sm font-medium">Email</label>
                     <input
                       value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      disabled={!editing}
-                      className={`mt-1 w-full rounded px-3 py-2 border ${editing ? 'ring-2 ring-[#8a3b42] bg-white' : 'bg-white/50'}`}
+                      disabled
+                      className={`${inputBase} bg-gray-100 cursor-not-allowed text-gray-500`}
                     />
                   </div>
 
+                  {/* Demographic fields */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium">Age</label>
+                      <input
+                        type="number"
+                        min={1}
+                        max={150}
+                        placeholder="Enter your age"
+                        value={age}
+                        onChange={(e) => {
+                          const v = e.target.value;
+                          setAge(v === "" ? "" : Math.max(1, Math.min(150, Number(v))));
+                        }}
+                        disabled={!editing}
+                        className={editing ? inputEnabled : inputDisabled}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium">Gender</label>
+                      <select
+                        value={gender}
+                        onChange={(e) => setGender(e.target.value)}
+                        disabled={!editing}
+                        className={editing ? inputEnabled : inputDisabled}
+                      >
+                        <option value="">Select gender</option>
+                        {GENDER_OPTIONS.map((g) => (
+                          <option key={g} value={g}>{g}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium">Country</label>
+                    <input
+                      placeholder="Enter your country"
+                      value={country}
+                      onChange={(e) => setCountry(e.target.value)}
+                      disabled={!editing}
+                      className={editing ? inputEnabled : inputDisabled}
+                    />
+                  </div>
+
+                  {/* Address fields */}
                   <div>
                     <label className="block text-sm font-medium">Address</label>
                     <input
@@ -178,41 +337,46 @@ export default function AccountPage() {
                       value={street}
                       onChange={(e) => setStreet(e.target.value)}
                       disabled={!editing}
-                      className={`mt-1 w-full rounded px-3 py-2 border mb-2 ${editing ? 'ring-2 ring-[#8a3b42] bg-white' : 'bg-white/50'}`}
+                      className={`${editing ? inputEnabled : inputDisabled} mb-2`}
                     />
                     <input
                       placeholder="City"
                       value={city}
                       onChange={(e) => setCity(e.target.value)}
                       disabled={!editing}
-                      className={`mt-1 w-full rounded px-3 py-2 border mb-2 ${editing ? 'ring-2 ring-[#8a3b42] bg-white' : 'bg-white/50'}`}
-                    />
-                    <input
-                      placeholder="Country"
-                      value={country}
-                      onChange={(e) => setCountry(e.target.value)}
-                      disabled={!editing}
-                      className={`mt-1 w-full rounded px-3 py-2 border ${editing ? 'ring-2 ring-[#8a3b42] bg-white' : 'bg-white/50'}`}
+                      className={editing ? inputEnabled : inputDisabled}
                     />
                   </div>
 
-                  <div className="flex gap-2">
+                  {/* Action buttons */}
+                  <div className="flex gap-3 pt-2">
                     {!editing ? (
-                      <button onClick={() => setEditing(true)} className="px-4 py-2 bg-[#8a3b42] text-white rounded transition transform duration-150 hover:scale-105 hover:opacity-90">
+                      <button
+                        onClick={() => { setEditing(true); setSuccessMsg(""); setErrorMsg(""); }}
+                        className="px-6 py-2 bg-[#800000] text-[#F5E6D3] font-medium rounded-lg transition-all duration-150 hover:bg-[#600000] hover:shadow-md"
+                      >
                         Edit
                       </button>
                     ) : (
                       <>
-                        <button onClick={saveProfile} disabled={saving} className="px-4 py-2 bg-[#5a1518] text-white rounded transition transform duration-150 hover:scale-105 hover:opacity-90">
+                        <button
+                          onClick={saveProfile}
+                          disabled={saving}
+                          className="px-6 py-2 bg-[#800000] text-[#F5E6D3] font-medium rounded-lg transition-all duration-150 hover:bg-[#600000] hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
                           {saving ? "Saving..." : "Save"}
                         </button>
-                        <button onClick={() => setEditing(false)} className="px-4 py-2 bg-gray-300 rounded transition transform duration-150 hover:scale-105 hover:opacity-90">
+                        <button
+                          onClick={() => setEditing(false)}
+                          className="px-6 py-2 bg-gray-300 text-gray-800 font-medium rounded-lg transition-all duration-150 hover:bg-gray-400 hover:shadow-md"
+                        >
                           Cancel
                         </button>
                       </>
                     )}
                   </div>
                 </div>
+                )}
               </div>
             )}
 

@@ -14,7 +14,7 @@ type SidebarProps = {
 const tabRoutes: Record<Tab, string> = {
   financial: "/admin/reports/financial",
   product: "/admin/reports/product",
-  customer: "/admin/reports/financial", // placeholder until customer report exists
+  customer: "/admin/reports/customer",
 };
 
 const tabs: { key: Tab; label: string; icon: React.ReactNode }[] = [

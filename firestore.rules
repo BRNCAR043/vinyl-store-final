@@ -51,6 +51,11 @@ service cloud.firestore {
         && request.auth.uid == userId;
     }
 
+    /* COLLECTION GROUP — allow admin to query all orders across users */
+    match /{path=**}/orders/{orderId} {
+      allow read: if isAdmin();
+    }
+
     /* DENY EVERYTHING ELSE */
     match /{document=**} {
       allow read, write: if false;
