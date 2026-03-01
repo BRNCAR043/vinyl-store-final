@@ -1,4 +1,7 @@
-// app/admin/page.tsx
+// Admin page: client-only interface for managing vinyl records.
+// - Wrapped with `AdminGuard` to restrict access
+// - Loads all vinyl records and exposes Add / Edit / Delete operations
+// - Shares filter UI similar to the public listing to make management easier
 "use client";
 import React, { useEffect, useState, useMemo } from "react";
 import { getAllVinyls, addVinyl, updateVinyl } from "../../lib/firestoreVinyls";
@@ -104,6 +107,8 @@ export default function AdminPage() {
     setModalOpen(false);
     getAllVinyls().then(setVinyls);
   };
+
+  // Handlers below call firestore helpers and then refresh the local list.
 
   const handleEditVinyl = async (updates: Vinyl) => {
     if (!editVinyl?.id) return;

@@ -1,4 +1,7 @@
 // app/page.tsx
+// Home page: assembles a collection of presentational sections that make up the
+// storefront landing page (hero, search, curated sections, decorations).
+// This file is intentionally light-weight and composes smaller components.
 import HeroSection from "../components/home/HeroSection";
 import AISearchSection from "../components/home/AISearchSection";
 import Decorations from "../components/home/Decorations";

@@ -8,8 +8,9 @@ import {
   collectionGroup,
   doc,
   setDoc,
+  getDoc,
 } from "firebase/firestore";
-import { db } from "./firebase";
+import { db, auth } from "./firebase";
 import type { CartItem } from "./cart";
 import * as cartApi from "./cart";
 
@@ -42,6 +43,39 @@ const userOrdersCollection = (uid: string) => collection(db, "users", uid, "orde
 // Create an order for a user and clear their cart
 export async function createOrder(uid: string, items: OrderItem[], total: number, paymentMethod?: string, delivery?: any): Promise<string | null> {
   if (!uid) throw new Error("AUTH_REQUIRED");
+
+  // Ensure the Firebase Auth token is available for Firestore writes.
+  // For brand-new users the Firestore SDK may not have the ID token yet;
+  // forcing a getIdToken() call guarantees the token is propagated before
+  // we attempt the first write.
+  const currentUser = auth.currentUser;
+  if (!currentUser) {
+    console.warn("createOrder: auth.currentUser is null – user may not be fully signed in yet.");
+    return null;
+  }
+  try {
+    await currentUser.getIdToken(/* forceRefresh */ true);
+  } catch (tokenErr) {
+    console.warn("createOrder: failed to refresh auth token:", tokenErr);
+  }
+
+  // Ensure the user document exists so the subcollection write doesn't hit
+  // timing issues with Firestore rules.  Uses merge so we never overwrite
+  // existing profile data.
+  try {
+    const userDocRef = doc(db, "users", uid);
+    const userSnap = await getDoc(userDocRef);
+    if (!userSnap.exists()) {
+      await setDoc(userDocRef, {
+        uid,
+        createdAt: new Date().toISOString(),
+        role: "user",
+      });
+    }
+  } catch (e) {
+    // Non-fatal – the order write may still succeed.
+    console.warn("createOrder: could not ensure user doc exists:", e);
+  }
 
   const totalCost = items.reduce((sum, item) => sum + (item.lineCost ?? 0), 0);
   const totalProfit = total - totalCost;
@@ -77,7 +111,13 @@ export async function createOrder(uid: string, items: OrderItem[], total: number
   // for per-user access remain strict and secure.
 
   // clear user's cart after successful user-order write
-  await cartApi.setCart(uid, []);
+  // Wrap in try-catch so a cart-clear failure does NOT mask the successful order.
+  try {
+    await cartApi.setCart(uid, []);
+  } catch (cartErr) {
+    console.warn("createOrder: order saved but failed to clear cart:", cartErr);
+  }
+
   // notify any client-side cart hooks to reload state
   try {
     if (typeof window !== "undefined" && (window as any).dispatchEvent) {

@@ -1,5 +1,7 @@
 import Image from "next/image";
 
+// About page: static presentational page describing the store and team. 
+// This page purely presentational 
 export default function AboutPage() {
   return (
     <main className="bg-black text-white min-h-screen">
@@ -8,6 +10,7 @@ export default function AboutPage() {
           <Image src="/info0.png" alt="About info" width={620} height={360} className="object-contain" />
         </div>
 
+        {/* Who are we section */}
         <div className="text-center mt-8">
           <h1 className="text-4xl md:text-5xl font-bold text-#ffeede font-anton mb-4">Who Are We</h1>
           <p className="max-w-3xl mx-auto text-sm md:text-base text-gray-200 leading-relaxed">
@@ -27,6 +30,7 @@ export default function AboutPage() {
           </p>
         </div>
 
+        {/* Meet the team section */}
         <section className="mt-12">
           <h2 className="text-2xl font-semibold mb-6 text-center">Meet the Team</h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">

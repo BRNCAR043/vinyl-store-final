@@ -1,3 +1,7 @@
+// Product details route (server component): attempts to fetch the vinyl record
+// on the server using `getVinylById`. If the server fetch fails or the id is
+// missing we fall back to rendering the client-side product component which
+// can fetch data in the browser.
 import React from "react";
 import { notFound } from "next/navigation";
 import { getVinylById } from "../../../lib/firestoreVinyls";

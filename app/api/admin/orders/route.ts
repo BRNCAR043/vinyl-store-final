@@ -1,8 +1,15 @@
+// Admin orders reporting endpoint
+// - Protects access by verifying the request bearer token corresponds to
+//   an admin user in Firestore (`users` collection).
+// - Aggregates orders across all users (collectionGroup on `orders`) and
+//   returns simple metrics (total amount, cost, profit) suitable for reports.
+// - This file runs on the server (Next.js route) and uses the admin SDK.
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminDb, getAdminApp } from "../../../../lib/firebase-admin";
 import { getAuth } from "firebase-admin/auth";
 
 async function verifyAdmin(req: NextRequest): Promise<boolean> {
+  // Expect an Authorization header with a Firebase ID token: `Bearer <token>`
   const authHeader = req.headers.get("authorization");
   if (!authHeader?.startsWith("Bearer ")) {
     console.error("[admin/orders] No Bearer token in Authorization header");
@@ -31,6 +38,7 @@ async function verifyAdmin(req: NextRequest): Promise<boolean> {
     const data = userDoc.data();
     console.log("[admin/orders] User data fields:", JSON.stringify({ role: data?.role, isAdmin: data?.isAdmin }));
 
+    // Consider either a `role: 'admin'` or a boolean `isAdmin` field as admin.
     const isAdmin = data?.role === "admin" || data?.isAdmin === true;
     if (!isAdmin) {
       console.error("[admin/orders] User is NOT admin");
@@ -68,10 +76,11 @@ export async function GET(req: NextRequest) {
       // Use stored totalCost if available; otherwise compute from item costs
       let totalCost = data.totalCost ?? 0;
       if (!data.totalCost && Array.isArray(data.items)) {
+        // Compute cost from each item's unitCost or fallback to vinyl lookup.
         totalCost = data.items.reduce((sum: number, item: any) => {
-          const cost = item.lineCost ?? item.unitCost
+          const cost = item.lineCost ?? (item.unitCost
             ? (item.unitCost ?? 0) * (item.quantity ?? 1)
-            : (vinylCostMap.get(item.vinylId) ?? 0) * (item.quantity ?? 1);
+            : (vinylCostMap.get(item.vinylId) ?? 0) * (item.quantity ?? 1));
           return sum + cost;
         }, 0);
       }

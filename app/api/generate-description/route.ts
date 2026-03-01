@@ -1,3 +1,6 @@
+// Small utility endpoint to generate a short product description for a vinyl
+// record using OpenAI. Input JSON should include `title` and optionally
+// `artist`. Returns `{ description: string }` or an error response.
 import OpenAI from "openai";
 
 export async function POST(request: Request) {
@@ -9,6 +12,8 @@ export async function POST(request: Request) {
       return new Response(JSON.stringify({ error: "Title is required" }), { status: 400, headers: { 'Content-Type': 'application/json' } });
     }
 
+    // Create an OpenAI client instance per-request. Using the environment
+    // variable keeps the key out of source control.
     const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
     const safeTitle = String(title).trim();
@@ -17,7 +22,9 @@ export async function POST(request: Request) {
       ? `Generate a short, evocative two-sentence product description for the album "${safeTitle}" by ${safeArtist}. Keep it concise and suitable for a retail listing.`
       : `Generate a short, evocative two-sentence product description for the album "${safeTitle}". Keep it concise and suitable for a retail listing.`;
 
-    // Prefer the newer Responses API when available (OpenAI JS v6+)
+    // Prefer the newer Responses API when available (OpenAI JS v6+). If the
+    // SDK in this environment doesn't support it we fall back to chat
+    // completions. Both branches return a short generated string.
     let desc = "";
     try {
       const resp = await (client as any).responses.create({ model: "gpt-3.5-turbo", input: prompt, max_tokens: 200 });

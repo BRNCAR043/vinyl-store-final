@@ -4,10 +4,8 @@ import { initializeFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { getStorage } from "firebase/storage";
 
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
 
-// Your web app's Firebase configuration
+// Web app's Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyC_snLVtQfhaHhbiyGnH-9Meqjq6npQC0c",
   authDomain: "vinyl-store-5dacb.firebaseapp.com",
@@ -21,7 +19,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 // Initialize Firestore with settings that avoid connectivity issues
-// (helps in some dev environments / proxies by forcing long polling)
+
 export const db = initializeFirestore(app, {
   experimentalForceLongPolling: true,
   useFetchStreams: false,

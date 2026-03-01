@@ -1,18 +1,26 @@
 "use client";
+// This page is a client component (runs in the browser).
+// It manages user-visible state (forms, loading spinners, wishlist interactions)
+// and uses browser-only APIs like event listeners and `window`.
 
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
+// Firestore helpers used to read and write the user document
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "../../lib/firebase";
+// Authentication context provides the logged-in `user` object
 import { useAuthContext } from "../../lib/AuthContext";
+// Helper functions for updating the user profile and managing wishlist/orders
 import { updateUserProfile } from "../../lib/userUtils";
 import { getWishlist, removeFromWishlist } from "../../lib/wishlist";
 import { getVinylById } from "../../lib/firestoreVinyls";
 import { fetchOrdersByUser } from "../../lib/orders";
 import type { Vinyl } from "../../types/vinyl";
 
+// Options shown in the gender dropdown. `as const` keeps them literal types.
 const GENDER_OPTIONS = ["Male", "Female", "Non-binary", "Prefer not to say"] as const;
 
+// Shape of the profile object we're interested in; used for developer clarity.
 interface UserProfile {
   firstName: string;
   lastName: string;
@@ -33,6 +41,7 @@ export default function AccountPage() {
 }
 
 function AccountContent() {
+  // `user` comes from the app-level auth context and can be null when not signed in.
   const { user } = useAuthContext();
   const searchParams = useSearchParams();
   const initialTab = searchParams?.get("tab") ?? "details";
@@ -54,7 +63,14 @@ function AccountContent() {
   const [orders, setOrders] = useState<any[] | null>(null);
   const [ordersLoading, setOrdersLoading] = useState(false);
 
-  // Fetch user document from Firestore and prefill fields
+  // The component manages many small pieces of state (form inputs, loading flags,
+  // success/error messages) so that the UI can show live previews and inline
+  // validation while editing the user's profile.
+
+  // Fetch user document from Firestore and prefill fields.
+  // This effect runs when `user` changes. It reads the `users/{uid}` document
+  // and populates local form state. If the document does not exist we create
+  // a minimal one using auth information (so downstream code always has a doc).
   useEffect(() => {
     if (!user) {
       setProfileLoading(false);
@@ -69,6 +85,7 @@ function AccountContent() {
         if (snap.exists()) {
           const data = snap.data() as Record<string, any>;
           if (mounted) {
+            // When a field is missing in Firestore fall back to auth data or empty string.
             setFirstName(data.firstName ?? (user!.displayName ?? "").split(" ")[0] ?? "");
             setLastName(data.lastName ?? (user!.displayName ?? "").split(" ").slice(1).join(" ") ?? "");
             setEmail(data.email ?? user!.email ?? "");
@@ -89,6 +106,7 @@ function AccountContent() {
           };
           await setDoc(ref, defaultData);
           if (mounted) {
+            // No user document existed: prefill fields from auth profile.
             const parts = (user!.displayName ?? "").split(" ");
             setFirstName(parts[0] ?? "");
             setLastName(parts.slice(1).join(" ") ?? "");
@@ -112,6 +130,8 @@ function AccountContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialTab]);
 
+  // Load a user's orders. This effect calls `fetchOrdersByUser` and stores
+  // the result in local state for the "My purchases" tab.
   useEffect(() => {
     let mounted = true;
     async function loadOrders() {
@@ -142,7 +162,7 @@ function AccountContent() {
     return (user.displayName ?? user.email ?? "U").charAt(0).toUpperCase();
   }, [user]);
 
-  // Clear messages after timeout
+  // Clear success messages after a short timeout so banners auto-dismiss.
   useEffect(() => {
     if (!successMsg) return;
     const t = setTimeout(() => setSuccessMsg(""), 3000);
@@ -155,6 +175,8 @@ function AccountContent() {
     return () => clearTimeout(t);
   }, [errorMsg]);
 
+  // Persist editable profile fields back to Firestore (via helper).
+  // Disables the form while saving and shows success/error banners.
   const saveProfile = async () => {
     if (!user) return;
     setSaving(true);
@@ -189,6 +211,7 @@ function AccountContent() {
     }
   };
 
+  // Shared input styles used to toggle enabled/disabled appearance for fields.
   const inputBase =
     "mt-1 w-full rounded-lg px-3 py-2 border border-neutral-300 transition-all duration-150";
   const inputEnabled = `${inputBase} bg-white focus:outline-none focus:ring-2 focus:ring-[#800000] focus:border-[#800000]`;
@@ -198,6 +221,7 @@ function AccountContent() {
     <div className="min-h-screen bg-black text-white">
       <main className="max-w-6xl mx-auto p-4 sm:p-6">
         <div className="flex flex-col md:flex-row gap-6">
+            {/* Sidebar with profile avatar and tab buttons (details, orders, wishlist) */}
             <aside className="w-full md:w-72 bg-[#8a3b42] rounded p-4 md:p-6 text-white">
             <div className="flex items-center gap-4">
               <div className="h-16 w-16 rounded-full bg-white/10 flex items-center justify-center text-2xl font-bold">
@@ -233,12 +257,13 @@ function AccountContent() {
             </div>
           </aside>
 
+          {/* Main content area: switches between Account details, Orders, and Wishlist */}
           <section className="flex-1 bg-[#F5E6D3] rounded-2xl shadow-lg p-4 sm:p-8 text-[#140b08]">
             {tab === "details" && (
               <div>
                 <h2 className="text-2xl font-semibold mb-4">Account details</h2>
 
-                {/* Success / Error banners */}
+                {/* Success / Error banners shown after actions (save, errors) */}
                 {successMsg && (
                   <div className="mb-4 rounded-lg bg-green-100 border border-green-400 text-green-800 px-4 py-2 text-sm font-medium">
                     {successMsg}
@@ -260,7 +285,7 @@ function AccountContent() {
                   </div>
                 ) : (
                 <div className="space-y-4">
-                  {/* Name fields */}
+                  {/* Name fields: first / last name inputs. Inputs become editable when `editing` is true. */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium">Name</label>
@@ -282,7 +307,7 @@ function AccountContent() {
                     </div>
                   </div>
 
-                  {/* Email (read-only) */}
+                  {/* Email (read-only) - users cannot change email here */}
                   <div>
                     <label className="block text-sm font-medium">Email</label>
                     <input
@@ -292,7 +317,7 @@ function AccountContent() {
                     />
                   </div>
 
-                  {/* Demographic fields */}
+                  {/* Demographic fields: age + gender selector */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium">Age</label>
@@ -337,7 +362,7 @@ function AccountContent() {
                     />
                   </div>
 
-                  {/* Address fields */}
+                  {/* Address fields: street + city */}
                   <div>
                     <label className="block text-sm font-medium">Address</label>
                     <input
@@ -356,7 +381,7 @@ function AccountContent() {
                     />
                   </div>
 
-                  {/* Action buttons */}
+                  {/* Action buttons: Edit toggles edit mode. Save persists changes. */}
                   <div className="flex gap-3 pt-2">
                     {!editing ? (
                       <button
@@ -388,6 +413,7 @@ function AccountContent() {
               </div>
             )}
 
+            {/* Orders tab: shows a simple list of past purchases with totals. */}
             {tab === "orders" && (
               <div>
                 <h2 className="text-2xl font-semibold mb-4">My purchases</h2>
@@ -421,6 +447,7 @@ function AccountContent() {
               </div>
             )}
 
+            {/* Wishlist tab: separately rendered component below */}
             {tab === "wishlist" && (
               <WishlistSection user={user} />
             )}
@@ -431,6 +458,10 @@ function AccountContent() {
   );
 }
 
+// WishlistSection: loads vinyl items from the user's wishlist and renders them.
+// - Reads wishlist item ids via `getWishlist` then maps them to vinyl records.
+// - Listens for a custom `wishlist-updated` event so other parts of the app
+//   can trigger a reload when the wishlist changes.
 function WishlistSection({ user }: { user: any }) {
   const [items, setItems] = useState<Vinyl[] | null>(null);
   const [loading, setLoading] = useState(false);
@@ -444,6 +475,7 @@ function WishlistSection({ user }: { user: any }) {
       }
       setLoading(true);
       try {
+        // Get list of vinyl ids in the wishlist, then resolve full records.
         const ids = await getWishlist(user.uid);
         const records = await Promise.all(ids.map((id) => getVinylById(id)));
         const filtered = records.filter((r): r is Vinyl => Boolean(r));
@@ -457,6 +489,7 @@ function WishlistSection({ user }: { user: any }) {
     }
     load();
 
+    // Re-load when an external update occurs (other UI may dispatch this event).
     function onExternal() {
       load();
     }
@@ -468,11 +501,13 @@ function WishlistSection({ user }: { user: any }) {
     };
   }, [user]);
 
+  // Remove an item from the wishlist (updates remote and local state).
   const handleRemove = async (id?: string) => {
     if (!user || !id) return;
     try {
       await removeFromWishlist(user.uid, id);
       setItems((prev) => (prev ? prev.filter((v) => v.id !== id) : []));
+      // Notify other parts of the app that the wishlist changed.
       window.dispatchEvent(new CustomEvent("wishlist-updated"));
     } catch (err) {
       console.error("Remove wishlist item failed", err);

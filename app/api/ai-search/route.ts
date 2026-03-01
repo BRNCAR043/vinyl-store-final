@@ -1,3 +1,9 @@
+// AI-powered search endpoint
+// - Accepts POST requests with either a text `query` or an `image` URL plus
+//   a list of `vinyls` to consider. It asks OpenAI to rank vinyls and returns
+//   the indices of the most relevant items (client maps indices back to items).
+// - Uses the OpenAI SDK and supports two modes: image (vision) and text.
+// - Returns only an array of indices (up to 8) to keep responses compact.
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
 
@@ -17,6 +23,7 @@ export async function POST(request: Request) {
   try {
     const { query, vinyls, image } = await request.json();
 
+    // Validate input: require either text query or image
     if ((!query || typeof query !== "string") && !image) {
       return NextResponse.json(
         { error: "Query or image is required" },
@@ -25,10 +32,11 @@ export async function POST(request: Request) {
     }
 
     if (!vinyls || !Array.isArray(vinyls) || vinyls.length === 0) {
+      // Nothing to rank
       return NextResponse.json({ indices: [] });
     }
 
-    // Create a summary of all vinyls for OpenAI to analyze
+    // Create a compact summary for each vinyl so the prompt stays small
     const vinylSummaries: VinylSummary[] = vinyls.map((v: any, index: number) => ({
       index,
       id: v.id,
@@ -42,7 +50,7 @@ export async function POST(request: Request) {
     let completion;
 
     if (image) {
-      // Image-based search using GPT-4o vision
+      // Image-based search: send image + prompt to a vision-capable model.
       const imagePrompt = `You are a vinyl record recommender. Analyze this image and determine what kind of music, mood, or vibe it represents. Then, from the following vinyl records, select EXACTLY 8 that best match the feeling, theme, or aesthetic of the image.
 
 ${query ? `Additional context from user: "${query}"` : ""}
@@ -77,7 +85,7 @@ If there are fewer than 8 vinyls, return all available indices.`;
         max_tokens: 500,
       });
     } else {
-      // Text-based search
+      // Text-based search: ask the model to return an ordered array of indices
       const textPrompt = `You are a vinyl record recommender. Given the user's request, analyze the following vinyl records and return EXACTLY 8 that best match what the user is looking for.
 
 User's request: "${query}"
@@ -100,10 +108,11 @@ If there are fewer than 8 vinyls, return all available indices.`;
 
     const text = completion.choices[0]?.message?.content || "";
 
-    // Parse the response to get indices
+    // Parse the response to get indices. We attempt to extract a JSON array
+    // (in case the model added extraneous text) and fall back to a simple
+    // deterministic choice if parsing fails.
     let indices: number[] = [];
     try {
-      // Extract JSON array from response (in case there's extra text)
       const match = text.match(/\[[\d,\s]+\]/);
       if (match) {
         indices = JSON.parse(match[0]);
@@ -125,7 +134,7 @@ If there are fewer than 8 vinyls, return all available indices.`;
   }
 }
 
-// Keep GET for health check
+// Keep GET for a lightweight health check so the endpoint can be tested
 export async function GET() {
   return NextResponse.json({ status: "AI Search endpoint ready" });
 }

@@ -1,6 +1,7 @@
 "use client";
 import React, { createContext, useContext, useState } from "react";
 import { signInWithGooglePopup, signInWithEmail, registerWithEmail } from "../../lib/auth";
+import { updateUserProfile } from "../../lib/userUtils";
 
 type AuthModalContextType = {
   open: () => void;
@@ -47,9 +48,9 @@ function AuthModal({ open, onClose }: { open: boolean; onClose: () => void }) {
     return "";
   };
 
-  const validatePassword = (v: string) => {
+  const validatePassword = (v: string, enforceMinLength = false) => {
     if (!v) return "Password is required";
-    if (v.length < 6) return "Password must be at least 6 characters";
+    if (enforceMinLength && v.length < 6) return "Password must be at least 6 characters";
     return "";
   };
 
@@ -68,7 +69,7 @@ function AuthModal({ open, onClose }: { open: boolean; onClose: () => void }) {
     if (!firstName.trim()) errors.firstName = "First name is required";
     if (!lastName.trim()) errors.lastName = "Last name is required";
     const emailErr = validateEmail(email);
-    const passErr = validatePassword(password);
+    const passErr = validatePassword(password, true);
     if (emailErr) errors.email = emailErr;
     if (passErr) errors.password = passErr;
     setFieldErrors(errors);
@@ -123,7 +124,14 @@ function AuthModal({ open, onClose }: { open: boolean; onClose: () => void }) {
     setLoading(true);
     try {
       const name = `${firstName.trim()} ${lastName.trim()}`.trim();
-      await registerWithEmail(name || null, email, password);
+      const user = await registerWithEmail(name || null, email, password);
+      // Explicitly save name to Firestore since onAuthStateChanged may fire
+      // before updateProfile completes, resulting in displayName: null
+      await updateUserProfile(user.uid, {
+        displayName: name,
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+      });
       setSuccess("Registered and signed in");
       setTimeout(() => onClose(), 900);
     } catch (err: any) {

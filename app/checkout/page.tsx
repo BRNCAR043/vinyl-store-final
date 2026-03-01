@@ -1,5 +1,12 @@
 "use client";
-import React, { useEffect, useState } from "react";
+// Checkout page (client component). Responsibilities:
+// - Renders a multi-step checkout flow (cart -> details -> payment -> confirmation)
+// - Loads product snapshots for items in the cart so prices shown are stable
+// - Uses an in-file `checkoutState` to share delivery fields with right-panel
+// - Listens for custom events (`checkout:pay`, `checkout:validation`) so the
+//   separate Pay button can trigger form validation and payment from outside
+//   the delivery/payment sub-forms.
+import React, { useEffect, useRef, useState } from "react";
 import useCart from "../../lib/useCart";
 import { getVinylById } from "../../lib/firestoreVinyls";
 import type { Vinyl } from "../../types/vinyl";
@@ -34,6 +41,8 @@ export default function CheckoutPage() {
       mounted = false;
     };
   }, [items]);
+
+  // `subtotal` is derived from `items` and the fetched `lookup` snapshot.
 
   const subtotal = items.reduce((s, it) => {
     const v = lookup[it.vinylId];
@@ -396,6 +405,20 @@ function PaymentForm({ items, subtotal, setStep, lookup, setConfirmedOrder }: an
   const [errors, setErrors] = useState<Record<string, string>>({});
   const { user } = useAuthContext();
 
+  // Refs to avoid stale closures in the checkout:pay event handler
+  const userRef = useRef(user);
+  const itemsRef = useRef(items);
+  const lookupRef = useRef(lookup);
+  const subtotalRef = useRef(subtotal);
+  const methodRef = useRef(method);
+  const cardRef = useRef(card);
+  useEffect(() => { userRef.current = user; }, [user]);
+  useEffect(() => { itemsRef.current = items; }, [items]);
+  useEffect(() => { lookupRef.current = lookup; }, [lookup]);
+  useEffect(() => { subtotalRef.current = subtotal; }, [subtotal]);
+  useEffect(() => { methodRef.current = method; }, [method]);
+  useEffect(() => { cardRef.current = card; }, [card]);
+
   const setCardField = (k: string, v: string) => {
     setCard((c) => ({ ...c, [k]: v }));
     setErrors((e) => {
@@ -428,21 +451,41 @@ function PaymentForm({ items, subtotal, setStep, lookup, setConfirmedOrder }: an
   // Listen for external pay requests (right-panel Pay button)
   useEffect(() => {
     function onPayEvent() {
-      if (!validate()) {
-        show("Please complete payment fields.", "error");
-        return;
+      // Validate using latest refs to avoid stale closure
+      const m = methodRef.current;
+      const c = cardRef.current;
+      if (m === "card") {
+        const next: Record<string, string> = {};
+        if (!c.owner.trim()) next.owner = "Enter cardholder name";
+        if (!c.number.trim() || c.number.replace(/\s+/g, "").length < 12) next.number = "Enter a valid card number";
+        if (!c.expiry.trim()) next.expiry = "Enter expiry date";
+        if (!c.cvv.trim() || c.cvv.trim().length < 3) next.cvv = "Enter CVV";
+        if (Object.keys(next).length > 0) {
+          setErrors(next);
+          show("Please complete payment fields.", "error");
+          return;
+        }
+        setErrors({});
       }
+
+      // Read latest values from refs to avoid stale closure issues
+      const currentUser = userRef.current;
+      const currentItems = itemsRef.current;
+      const currentLookup = lookupRef.current;
+      const currentSubtotal = subtotalRef.current;
+      const currentMethod = methodRef.current;
+
       // In a real app we'd call payment API here.
       // For now simulate payment, persist order to Firestore, then advance to confirmation.
       (async () => {
         show("Processing order...", "info");
-        if (!user) {
+        if (!currentUser) {
           show("You must be signed in to place an order.", "error");
           return;
         }
         // build order items with snapshot prices
-        const orderItems = (items || []).map((it: any) => {
-          const v = lookup[it.vinylId];
+        const orderItems = (currentItems || []).map((it: any) => {
+          const v = currentLookup[it.vinylId];
           const unitPrice = v ? (v.onSale && v.salePrice ? v.salePrice : v.price) : 0;
           const unitCost = v?.cost ?? 0;
           const title = v ? v.albumName : `Record ${it.vinylId}`;
@@ -464,7 +507,7 @@ function PaymentForm({ items, subtotal, setStep, lookup, setConfirmedOrder }: an
 
         // call createOrder (this will also clear the user's cart on success)
         try {
-          const createdId = await createOrder(user.uid, orderItems, subtotal, method, delivery);
+          const createdId = await createOrder(currentUser.uid, orderItems, currentSubtotal, currentMethod, delivery);
           if (!createdId) {
             show("Failed to save order. Please contact support.", "error");
             return;
@@ -479,7 +522,7 @@ function PaymentForm({ items, subtotal, setStep, lookup, setConfirmedOrder }: an
           );
           // record order locally for confirmation UI
           try {
-            setConfirmedOrder({ id: createdId, items: orderItems, total: subtotal, createdAt: new Date().toISOString() });
+            setConfirmedOrder({ id: createdId, items: orderItems, total: currentSubtotal, createdAt: new Date().toISOString() });
           } catch (e) {}
           show("Payment successful and order saved.", "success");
           try {
@@ -493,7 +536,8 @@ function PaymentForm({ items, subtotal, setStep, lookup, setConfirmedOrder }: an
     }
     (window as any).addEventListener("checkout:pay", onPayEvent);
     return () => (window as any).removeEventListener("checkout:pay", onPayEvent);
-  }, [method, card]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [show, setConfirmedOrder, setStep]);
 
   return (
     <div>

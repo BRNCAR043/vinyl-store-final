@@ -1,5 +1,11 @@
 "use client";
+// Vinyl listing page (client component):
+// - Loads vinyl records from Firestore on mount
+// - Maintains local state for filtering, sorting, pagination and search
+// - Uses `useMemo` to derive dropdown lists from loaded records
+// - Renders a grid of `ProductCard` components and pagination controls
 import React, { useEffect, useState, useMemo } from "react";
+import { useSearchParams } from "next/navigation";
 import ProductCard from "../../components/ui/ProductCard";
 import { getAllVinyls } from "../../lib/firestoreVinyls";
 import type { Vinyl } from "../../types/vinyl";
@@ -13,6 +19,7 @@ const POSTERS = [
 ];
 
 export default function VinylPage() {
+  const searchParams = useSearchParams();
   const [vinyls, setVinyls] = useState<Vinyl[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -28,9 +35,20 @@ export default function VinylPage() {
   const [condition, setCondition] = useState<string>("");
   const [artistQuery, setArtistQuery] = useState<string>("");
   const [extras, setExtras] = useState<{ limited: boolean; autographed: boolean; onSale: boolean }>({ limited: false, autographed: false, onSale: false });
+  const [brandNew, setBrandNew] = useState(false);
 
   // Search query – filters the main grid directly
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Initialize filters from URL search params
+  useEffect(() => {
+    if (searchParams.get("onSale") === "true") {
+      setExtras((prev) => ({ ...prev, onSale: true }));
+    }
+    if (searchParams.get("brandNew") === "true") {
+      setBrandNew(true);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     let mounted = true;
@@ -50,6 +68,10 @@ export default function VinylPage() {
       mounted = false;
     };
   }, []);
+
+  // The main render section below applies the search/filter/sort pipeline to
+  // `vinyls` and then slices the resulting array for pagination. This keeps
+  // the UI responsive and easy to reason about.
 
   // Admin defaults (mirror of VinylForm options) so filters include admin choices even if Firestore is empty
   const defaultGenreOptions = [
@@ -191,6 +213,7 @@ export default function VinylPage() {
                     setArtistQuery("");
                     setSearchQuery("");
                     setExtras({ limited: false, autographed: false, onSale: false });
+                    setBrandNew(false);
                     setCurrentPage(1);
                   }}
                   className="w-full mt-2 px-4 py-2 bg-[#8a3b42] text-white rounded font-semibold hover:bg-[#a94a56]"
@@ -269,6 +292,11 @@ export default function VinylPage() {
                   if (condition && it.condition && it.condition.toLowerCase() !== condition.toLowerCase()) return false;
                   if (artistQuery && it.artist && !it.artist.toLowerCase().includes(artistQuery.toLowerCase())) return false;
                   if (extras.onSale && !it.onSale) return false;
+                  // Brand new filter: match conditions containing "new" or "mint"
+                  if (brandNew) {
+                    const cond = (it.condition || "").toString().toLowerCase();
+                    if (!cond.includes("new") && !cond.includes("mint")) return false;
+                  }
                   // limited & autographed fields may not exist on data; skip if not present
                   if (extras.limited && !(it as any).limited) return false;
                   if (extras.autographed && !(it as any).autographed) return false;
