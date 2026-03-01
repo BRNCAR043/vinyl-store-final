@@ -20,7 +20,7 @@ export default function TopCustomerGrid({ customers }: Props) {
   return (
     <section>
       <h2 className="text-xl font-semibold text-[#F5E6D3] mb-6">
-        🏆 Top 5 Customers by Spending
+        Top 5 Customers by Spending
       </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
         {top5.map((customer, index) => (
@@ -28,18 +28,7 @@ export default function TopCustomerGrid({ customers }: Props) {
             key={customer.id}
             className="group relative bg-[#F5E6D3] rounded-xl shadow-lg overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-2xl"
           >
-            {/* Badge */}
-            <div className="absolute top-3 right-3 z-10">
-              {index === 0 ? (
-                <span className="bg-gradient-to-r from-orange-500 to-red-500 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-md">
-                  👑 VIP
-                </span>
-              ) : (
-                <span className="bg-[#1B4332] text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-md">
-                  ⭐ Top Buyer
-                </span>
-              )}
-            </div>
+           
 
             {/* Avatar */}
             <div className="flex items-center justify-center pt-6 pb-2">

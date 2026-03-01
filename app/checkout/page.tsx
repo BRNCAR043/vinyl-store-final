@@ -48,8 +48,8 @@ export default function CheckoutPage() {
           <h1 className="text-4xl font-bold mb-6">Shopping Cart</h1>
 
           {/* Progress */}
-          <div className="mb-8">
-            <div className="flex items-center gap-6">
+          <div className="mb-8 overflow-x-auto">
+            <div className="flex items-center gap-3 sm:gap-6 min-w-[400px]">
               {Array.from({ length: 4 }).map((_, i) => {
                 const num = i + 1;
                 const active = num === step;
@@ -70,7 +70,7 @@ export default function CheckoutPage() {
                           <div className="text-sm font-semibold text-[#5a1518]">{num}</div>
                         )}
                       </div>
-                      <div className="mt-2 text-sm text-gray-300">
+                      <div className="mt-2 text-xs sm:text-sm text-gray-300 whitespace-nowrap">
                         {num === 1 ? "Cart" : num === 2 ? "Checkout Details" : num === 3 ? "Payment" : "Confirmation"}
                       </div>
                     </div>
@@ -83,7 +83,7 @@ export default function CheckoutPage() {
 
             {/* Two-column layout - step-aware */}
             {step === 1 ? (
-            <div className="flex gap-8">
+            <div className="flex flex-col lg:flex-row gap-8">
               {/* Left: cart items (larger) */}
               <section className="flex-1 bg-[#f6efe6] text-[#5a1518] p-6 rounded-lg">
                 <h2 className="text-2xl font-semibold mb-4">Your items</h2>
@@ -110,8 +110,8 @@ export default function CheckoutPage() {
                         const img = v ? v.imageUrl : undefined;
                         const price = v ? (v.onSale && v.salePrice ? v.salePrice : v.price) : 0;
                         return (
-                          <li key={it.vinylId} className="flex items-center gap-4 bg-white/80 p-3 rounded">
-                            <div className="w-28 h-28 bg-gray-200 rounded overflow-hidden flex-shrink-0">
+                          <li key={it.vinylId} className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 bg-white/80 p-3 rounded">
+                            <div className="w-20 h-20 sm:w-28 sm:h-28 bg-gray-200 rounded overflow-hidden flex-shrink-0">
                               {img ? (
                                 // @ts-ignore
                                 <img src={img} alt={title} className="w-full h-full object-cover" />
@@ -125,17 +125,17 @@ export default function CheckoutPage() {
                               <div className="text-sm text-gray-600">{artist}</div>
                             </div>
 
-                            <div className="w-40 flex items-center justify-center gap-3">
+                            <div className="w-full sm:w-40 flex items-center justify-start sm:justify-center gap-3">
                               <button onClick={() => update(it.vinylId, it.quantity - 1)} className="px-3 py-1 bg-[#8a3b42] text-white rounded hover:bg-[#7a3b3d] transition">-</button>
                               <div className="w-10 text-center">{it.quantity}</div>
                               <button onClick={() => update(it.vinylId, it.quantity + 1)} className="px-3 py-1 bg-[#8a3b42] text-white rounded hover:bg-[#7a3b3d] transition">+</button>
                             </div>
 
-                            <div className="w-20 text-right">
-                              <div className="text-sm">R {price.toFixed(2)}</div>
+                            <div className="w-auto sm:w-20 text-left sm:text-right">
+                              <div className="text-sm"><span className="sm:hidden font-medium">Price: </span>R {price.toFixed(2)}</div>
                             </div>
-                            <div className="w-16 text-right">
-                              <div className="text-sm font-semibold">R {(price * it.quantity).toFixed(2)}</div>
+                            <div className="w-auto sm:w-16 text-left sm:text-right">
+                              <div className="text-sm font-semibold"><span className="sm:hidden font-medium">Total: </span>R {(price * it.quantity).toFixed(2)}</div>
                             </div>
 
                             <button
@@ -183,14 +183,14 @@ export default function CheckoutPage() {
             </div>
           ) : step === 2 ? (
             // Step 2: Checkout Details
-            <div className="flex gap-8">
+            <div className="flex flex-col lg:flex-row gap-8">
               <section className="flex-1 bg-[#f6efe6] text-[#5a1518] p-6 rounded-lg">
                 <h2 className="text-2xl font-semibold mb-4">Delivery Details</h2>
                 <DeliveryForm items={items} subtotal={subtotal} setStep={setStep} lookup={lookup} />
               </section>
 
-              <aside className="w-80 flex-shrink-0 bg-transparent">
-                <div className="p-6 rounded-lg sticky top-28 bg-[#8a3b42] text-white">
+              <aside className="w-full lg:w-80 lg:flex-shrink-0 bg-transparent">
+                <div className="p-6 rounded-lg lg:sticky lg:top-28 bg-[#8a3b42] text-white">
                   <div className="mb-4">
                     <div className="text-sm text-[#f6efe6]">Order Summary</div>
                     <div className="text-xl font-bold">R {subtotal.toFixed(2)}</div>
@@ -205,14 +205,14 @@ export default function CheckoutPage() {
             </div>
           ) : step === 3 ? (
             // Step 3: Payment
-            <div className="flex gap-8">
+            <div className="flex flex-col lg:flex-row gap-8">
               <section className="flex-1 bg-[#f6efe6] text-[#5a1518] p-6 rounded-lg">
                 <h2 className="text-2xl font-semibold mb-4">Payment</h2>
                 <PaymentForm items={items} subtotal={subtotal} setStep={setStep} lookup={lookup} setConfirmedOrder={setConfirmedOrder} />
               </section>
 
-              <aside className="w-80 flex-shrink-0 bg-transparent">
-                <div className="p-6 rounded-lg sticky top-28 bg-[#8a3b42] text-white">
+              <aside className="w-full lg:w-80 lg:flex-shrink-0 bg-transparent">
+                <div className="p-6 rounded-lg lg:sticky lg:top-28 bg-[#8a3b42] text-white">
                   <div className="mb-4">
                     <div className="text-sm text-[#f6efe6]">Order Summary</div>
                     <div className="text-xl font-bold">R {subtotal.toFixed(2)}</div>

@@ -135,7 +135,7 @@ export default function CartDrawer({ open, onClose }: { open: boolean; onClose: 
                   }
                 }
               }}
-              className="w-full px-4 py-2 rounded bg-[#5a1518] text-white hover:bg-[#451013] transition-colors duration-150"
+              className="w-full px-4 py-2 rounded bg-[#8a3b42] text-white border border-white hover:bg-[#5a1518] transition-colors duration-150"
             >
               Proceed to Checkout
             </button>

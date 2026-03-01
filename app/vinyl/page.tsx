@@ -15,6 +15,7 @@ const POSTERS = [
 export default function VinylPage() {
   const [vinyls, setVinyls] = useState<Vinyl[] | null>(null);
   const [loading, setLoading] = useState(true);
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   // Pagination
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -27,6 +28,9 @@ export default function VinylPage() {
   const [condition, setCondition] = useState<string>("");
   const [artistQuery, setArtistQuery] = useState<string>("");
   const [extras, setExtras] = useState<{ limited: boolean; autographed: boolean; onSale: boolean }>({ limited: false, autographed: false, onSale: false });
+
+  // Search query – filters the main grid directly
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     let mounted = true;
@@ -104,9 +108,18 @@ export default function VinylPage() {
         <h1 className="text-3xl font-bold mb-4">Vinyl Records</h1>
         <p className="text-gray-400 mb-6">Browse our full vinyl collection.</p>
 
-        <div className="flex gap-8">
+        {/* Mobile filter toggle */}
+        <button
+          onClick={() => setFiltersOpen(!filtersOpen)}
+          className="lg:hidden mb-4 px-4 py-2 rounded bg-[#8a3b42] text-white text-sm font-semibold hover:bg-[#a94a56] transition-colors flex items-center gap-2"
+        >
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" /></svg>
+          {filtersOpen ? "Hide Filters" : "Show Filters"}
+        </button>
+
+        <div className="flex flex-col lg:flex-row gap-8">
           {/* Left column: sidebar + posters underneath */}
-          <div className="w-80 flex-shrink-0 flex flex-col">
+          <div className={`${filtersOpen ? 'block' : 'hidden'} lg:block w-full lg:w-80 lg:flex-shrink-0 flex flex-col`}>
             <aside className="bg-[#f6efe6] text-[#8a3b42] p-5 rounded-lg shadow-lg">
               <h2 className="text-xl font-semibold mb-4">Filters</h2>
 
@@ -167,7 +180,24 @@ export default function VinylPage() {
                 </div>
               </div>
 
-              {/* Apply button removed (non-functional) */}
+              <div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPriceSort("");
+                    setDateSort("");
+                    setGenre("");
+                    setCondition("");
+                    setArtistQuery("");
+                    setSearchQuery("");
+                    setExtras({ limited: false, autographed: false, onSale: false });
+                    setCurrentPage(1);
+                  }}
+                  className="w-full mt-2 px-4 py-2 bg-[#8a3b42] text-white rounded font-semibold hover:bg-[#a94a56]"
+                >
+                  Clear Filters
+                </button>
+              </div>
             </aside>
 
             {/* Small sporadic posters beneath the filter area, hanging left */}
@@ -203,6 +233,23 @@ export default function VinylPage() {
           {/* Main content */}
           <section className="flex-1 relative">
 
+            {/* Search bar – filters the grid directly */}
+            <div className="relative mb-6 max-w-sm">
+              <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg className="h-5 w-5 text-[#5a1518]" viewBox="0 0 24 24" fill="none" aria-hidden>
+                  <path stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M11 18a7 7 0 100-14 7 7 0 000 14z" />
+                </svg>
+              </span>
+              <input
+                value={searchQuery}
+                onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
+                placeholder="Search by title or artist…"
+                className="w-full pl-10 pr-4 py-2.5 rounded-full bg-[#f6efe6] text-[#0b0b0b] text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#7b0017]/40"
+                aria-label="Search records"
+                autoComplete="off"
+              />
+            </div>
+
             {loading ? (
               <div className="text-gray-400">Loading...</div>
             ) : vinyls && vinyls.length > 0 ? (
@@ -211,6 +258,13 @@ export default function VinylPage() {
 
                 // Filters
                 let filtered = items.filter((it) => {
+                  // Search query filter
+                  if (searchQuery.trim()) {
+                    const q = searchQuery.toLowerCase();
+                    const matchesTitle = it.albumName?.toLowerCase().includes(q);
+                    const matchesArtist = it.artist?.toLowerCase().includes(q);
+                    if (!matchesTitle && !matchesArtist) return false;
+                  }
                   if (genre && it.genres && !it.genres.toLowerCase().includes(genre.toLowerCase())) return false;
                   if (condition && it.condition && it.condition.toLowerCase() !== condition.toLowerCase()) return false;
                   if (artistQuery && it.artist && !it.artist.toLowerCase().includes(artistQuery.toLowerCase())) return false;

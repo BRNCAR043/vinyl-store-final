@@ -30,6 +30,7 @@ export function useAuthModal() {
 function AuthModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [mode, setMode] = useState<"login" | "register">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -39,6 +40,40 @@ function AuthModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [showNoAccountPopup, setShowNoAccountPopup] = useState(false);
 
   if (!open) return null;
+
+  const validateEmail = (v: string) => {
+    if (!v.trim()) return "Email is required";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim())) return "Please enter a valid email address";
+    return "";
+  };
+
+  const validatePassword = (v: string) => {
+    if (!v) return "Password is required";
+    if (v.length < 6) return "Password must be at least 6 characters";
+    return "";
+  };
+
+  const validateLogin = (): boolean => {
+    const errors: Record<string, string> = {};
+    const emailErr = validateEmail(email);
+    const passErr = validatePassword(password);
+    if (emailErr) errors.email = emailErr;
+    if (passErr) errors.password = passErr;
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const validateRegister = (): boolean => {
+    const errors: Record<string, string> = {};
+    if (!firstName.trim()) errors.firstName = "First name is required";
+    if (!lastName.trim()) errors.lastName = "Last name is required";
+    const emailErr = validateEmail(email);
+    const passErr = validatePassword(password);
+    if (emailErr) errors.email = emailErr;
+    if (passErr) errors.password = passErr;
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
   const handleGoogle = async () => {
     setLoading(true);
@@ -55,8 +90,10 @@ function AuthModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   };
 
   const handleEmailLogin = async () => {
-    setLoading(true);
     setError(null);
+    setFieldErrors({});
+    if (!validateLogin()) return;
+    setLoading(true);
     try {
       await signInWithEmail(email, password);
       setSuccess("Signed in successfully");
@@ -80,8 +117,10 @@ function AuthModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   };
 
   const handleRegister = async () => {
-    setLoading(true);
     setError(null);
+    setFieldErrors({});
+    if (!validateRegister()) return;
+    setLoading(true);
     try {
       const name = `${firstName.trim()} ${lastName.trim()}`.trim();
       await registerWithEmail(name || null, email, password);
@@ -99,30 +138,36 @@ function AuthModal({ open, onClose }: { open: boolean; onClose: () => void }) {
       <div className="absolute inset-0 bg-black/60" onClick={onClose} />
       <div className="relative z-10 w-full max-w-md bg-[#f6efe6] text-[#5a1518] rounded-lg shadow-lg p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-xl font-bold">Login</h3>
+          <h3 className="text-xl font-bold">{mode === "login" ? "Login" : "Register"}</h3>
           <button onClick={onClose} className="text-sm text-[#5a1518]">Close</button>
         </div>
 
         {mode === "login" ? (
           <div className="space-y-3">
-            <input
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Email"
-              type="email"
-              className="w-full px-3 py-2 rounded bg-white text-[#5a1518]"
-            />
-            <input
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Password"
-              type="password"
-              className="w-full px-3 py-2 rounded bg-white text-[#5a1518]"
-            />
+            <div>
+              <input
+                value={email}
+                onChange={(e) => { setEmail(e.target.value); setFieldErrors((p) => ({ ...p, email: "" })); }}
+                placeholder="Email"
+                type="email"
+                className={`w-full px-3 py-2 rounded bg-white text-[#5a1518] ${fieldErrors.email ? "ring-2 ring-red-500" : ""}`}
+              />
+              {fieldErrors.email && <p className="text-xs text-red-600 mt-1">{fieldErrors.email}</p>}
+            </div>
+            <div>
+              <input
+                value={password}
+                onChange={(e) => { setPassword(e.target.value); setFieldErrors((p) => ({ ...p, password: "" })); }}
+                placeholder="Password"
+                type="password"
+                className={`w-full px-3 py-2 rounded bg-white text-[#5a1518] ${fieldErrors.password ? "ring-2 ring-red-500" : ""}`}
+              />
+              {fieldErrors.password && <p className="text-xs text-red-600 mt-1">{fieldErrors.password}</p>}
+            </div>
             <button
               onClick={handleEmailLogin}
               disabled={loading}
-              className="w-full px-4 py-2 rounded bg-[#5a1518] hover:bg-[#451014] text-white disabled:opacity-60"
+              className="w-full px-4 py-2 rounded bg-[#8a3b42] hover:bg-[#5a1518] text-white disabled:opacity-60 transition-colors"
             >
               {loading ? "Signing in…" : "Sign in"}
             </button>
@@ -138,47 +183,59 @@ function AuthModal({ open, onClose }: { open: boolean; onClose: () => void }) {
             </div>
 
             <div className="pt-4 border-t border-[#e6dfd6]">
-              <button onClick={() => setMode("register")} className="w-full mt-3 px-4 py-2 rounded bg-white text-[#5a1518] border border-[#d9d2c8] hover:bg-[#f1efe9]">Register</button>
+              <button onClick={() => { setMode("register"); setFieldErrors({}); setError(null); }} className="w-full mt-3 px-4 py-2 rounded bg-white text-[#5a1518] border border-[#d9d2c8] hover:bg-[#f1efe9]">Register</button>
             </div>
           </div>
         ) : (
           <div className="space-y-3">
-            <input
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
-              placeholder="First name"
-              className="w-full px-3 py-2 rounded bg-white text-[#5a1518]"
-            />
-            <input
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
-              placeholder="Last name"
-              className="w-full px-3 py-2 rounded bg-white text-[#5a1518]"
-            />
-            <input
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Email"
-              type="email"
-              className="w-full px-3 py-2 rounded bg-white text-[#5a1518]"
-            />
-            <input
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Password"
-              type="password"
-              className="w-full px-3 py-2 rounded bg-white text-[#5a1518]"
-            />
+            <div>
+              <input
+                value={firstName}
+                onChange={(e) => { setFirstName(e.target.value); setFieldErrors((p) => ({ ...p, firstName: "" })); }}
+                placeholder="First name"
+                className={`w-full px-3 py-2 rounded bg-white text-[#5a1518] ${fieldErrors.firstName ? "ring-2 ring-red-500" : ""}`}
+              />
+              {fieldErrors.firstName && <p className="text-xs text-red-600 mt-1">{fieldErrors.firstName}</p>}
+            </div>
+            <div>
+              <input
+                value={lastName}
+                onChange={(e) => { setLastName(e.target.value); setFieldErrors((p) => ({ ...p, lastName: "" })); }}
+                placeholder="Last name"
+                className={`w-full px-3 py-2 rounded bg-white text-[#5a1518] ${fieldErrors.lastName ? "ring-2 ring-red-500" : ""}`}
+              />
+              {fieldErrors.lastName && <p className="text-xs text-red-600 mt-1">{fieldErrors.lastName}</p>}
+            </div>
+            <div>
+              <input
+                value={email}
+                onChange={(e) => { setEmail(e.target.value); setFieldErrors((p) => ({ ...p, email: "" })); }}
+                placeholder="Email"
+                type="email"
+                className={`w-full px-3 py-2 rounded bg-white text-[#5a1518] ${fieldErrors.email ? "ring-2 ring-red-500" : ""}`}
+              />
+              {fieldErrors.email && <p className="text-xs text-red-600 mt-1">{fieldErrors.email}</p>}
+            </div>
+            <div>
+              <input
+                value={password}
+                onChange={(e) => { setPassword(e.target.value); setFieldErrors((p) => ({ ...p, password: "" })); }}
+                placeholder="Password"
+                type="password"
+                className={`w-full px-3 py-2 rounded bg-white text-[#5a1518] ${fieldErrors.password ? "ring-2 ring-red-500" : ""}`}
+              />
+              {fieldErrors.password && <p className="text-xs text-red-600 mt-1">{fieldErrors.password}</p>}
+            </div>
             <button
               onClick={handleRegister}
               disabled={loading}
-              className="w-full px-4 py-2 rounded bg-[#5a1518] hover:bg-[#451014] text-white disabled:opacity-60"
+              className="w-full px-4 py-2 rounded bg-[#8a3b42] hover:bg-[#5a1518] text-white disabled:opacity-60 transition-colors"
             >
               {loading ? "Registering…" : "Create account"}
             </button>
 
             <div className="pt-4 border-t border-[#e6dfd6]">
-              <button onClick={() => setMode("login")} className="w-full mt-3 px-4 py-2 rounded bg-white text-[#5a1518] border border-[#d9d2c8] hover:bg-[#f1efe9]">Back to Login</button>
+              <button onClick={() => { setMode("login"); setFieldErrors({}); setError(null); }} className="w-full mt-3 px-4 py-2 rounded bg-white text-[#5a1518] border border-[#d9d2c8] hover:bg-[#f1efe9]">Back to Login</button>
             </div>
           </div>
         )}

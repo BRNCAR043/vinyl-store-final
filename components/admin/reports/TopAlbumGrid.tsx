@@ -25,27 +25,14 @@ export default function TopAlbumGrid({ products }: Props) {
 
   return (
     <section>
-      <h2 className="text-xl font-semibold text-[#F5E6D3] mb-6">
-        🏆 Top 5 Best Selling Albums
-      </h2>
+      <h2 className="text-xl font-semibold text-[#F5E6D3] mb-6">Top 5 Best Selling Albums</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
         {top5.map((product, index) => (
           <div
             key={product.id}
             className="group relative bg-[#F5E6D3] rounded-xl shadow-lg overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-2xl"
           >
-            {/* Badge */}
-            <div className="absolute top-3 right-3 z-10">
-              {index === 0 ? (
-                <span className="bg-gradient-to-r from-orange-500 to-red-500 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-md">
-                  🔥 Bestseller
-                </span>
-              ) : (
-                <span className="bg-[#1B4332] text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-md">
-                  ⭐ Top Seller
-                </span>
-              )}
-            </div>
+            {/* Badge removed */}
 
             {/* Album Cover */}
             <div className="aspect-square w-full overflow-hidden">

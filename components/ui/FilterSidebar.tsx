@@ -118,7 +118,7 @@ export default function FilterSidebar(props: FilterSidebarProps = {}) {
           }}
           className="w-full mt-2 px-4 py-2 bg-[#8a3b42] text-white rounded font-semibold hover:bg-[#a94a56]"
         >
-          Clear
+          Clear Filters
         </button>
       </div>
     </aside>

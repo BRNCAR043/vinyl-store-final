@@ -82,16 +82,16 @@ export default function ProductPageClient({ vinyl, id }: { vinyl: Vinyl | null; 
   const price = currentVinyl.onSale && currentVinyl.salePrice ? currentVinyl.salePrice : currentVinyl.price || 0;
 
   return (
-    <main className="min-h-screen bg-black text-white py-8">
-      <div className="max-w-6xl mx-auto px-6 py-8 bg-[#f6efe6] text-[#5a1518] rounded-lg">
+    <main className="min-h-screen bg-black text-white py-4 sm:py-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-8 bg-[#f6efe6] text-[#5a1518] rounded-lg">
         <div className="flex flex-col md:flex-row gap-8">
           <div className="md:w-1/2">
             <div className="w-full bg-gray-200 rounded overflow-hidden">
               {currentVinyl.imageUrl ? (
                 // @ts-ignore allow external
-                <img src={currentVinyl.imageUrl} alt={currentVinyl.albumName} className="w-full h-[480px] object-cover" />
+                <img src={currentVinyl.imageUrl} alt={currentVinyl.albumName} className="w-full h-[300px] sm:h-[400px] md:h-[480px] object-cover" />
               ) : (
-                <div className="w-full h-[480px] bg-gray-300 flex items-center justify-center">No image</div>
+                <div className="w-full h-[300px] sm:h-[400px] md:h-[480px] bg-gray-300 flex items-center justify-center">No image</div>
               )}
             </div>
           </div>
@@ -108,14 +108,14 @@ export default function ProductPageClient({ vinyl, id }: { vinyl: Vinyl | null; 
             )}
             <div className="text-2xl font-bold text-[#5a1518] mb-6">R {Number(price).toFixed(2)}</div>
 
-            <div className="flex items-center gap-4 mb-6">
+            <div className="flex flex-wrap items-center gap-3 sm:gap-4 mb-6">
               <div className="flex items-center border border-[#dacdbf] rounded">
                 <button onClick={() => setQuantity((q) => Math.max(1, q - 1))} className="px-3 py-2 bg-[#8a3b42] text-white hover:bg-[#a94a56] transition-colors duration-150">-</button>
                 <div className="px-4 py-2">{quantity}</div>
                 <button onClick={() => setQuantity((q) => q + 1)} className="px-3 py-2 bg-[#8a3b42] text-white hover:bg-[#a94a56] transition-colors duration-150">+</button>
               </div>
 
-              <button onClick={handleAdd} className="flex items-center gap-2 px-5 py-3 rounded bg-[#8a3b42] text-white hover:bg-[#a94a56] min-w-[140px] justify-center transition-colors duration-150">
+              <button onClick={handleAdd} className="flex items-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded bg-[#8a3b42] text-white hover:bg-[#a94a56] min-w-[120px] sm:min-w-[140px] justify-center transition-colors duration-150">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M6 6h15l-1.5 9h-11z" />
                   <circle cx="9" cy="20" r="1" />
@@ -124,7 +124,7 @@ export default function ProductPageClient({ vinyl, id }: { vinyl: Vinyl | null; 
                 <span className="font-semibold">Add</span>
               </button>
 
-              <button onClick={handleToggleWishlist} className="flex items-center gap-2 px-5 py-3 rounded bg-[#5a1518] text-[#f6efe6] hover:bg-[#6e1e22] min-w-[140px] justify-center transition-colors duration-150">
+              <button onClick={handleToggleWishlist} className="flex items-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded bg-[#5a1518] text-[#f6efe6] hover:bg-[#6e1e22] min-w-[120px] sm:min-w-[140px] justify-center transition-colors duration-150">
                 {inWishlist ? (
                   <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 21s-7.5-4.35-10-7.17C-0.43 10.76 2.5 6 6.5 6c2.24 0 3.5 1.5 5.5 3.5C13 7.5 14.27 6 16.5 6 20.5 6 23.43 10.76 22 13.83 19.5 16.65 12 21 12 21z" fill="#f6efe6"/></svg>
                 ) : (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "../../lib/firebase";
@@ -25,6 +25,14 @@ interface UserProfile {
 }
 
 export default function AccountPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-black" />}>
+      <AccountContent />
+    </Suspense>
+  );
+}
+
+function AccountContent() {
   const { user } = useAuthContext();
   const searchParams = useSearchParams();
   const initialTab = searchParams?.get("tab") ?? "details";
@@ -188,9 +196,9 @@ export default function AccountPage() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <main className="max-w-6xl mx-auto p-6">
-        <div className="flex gap-6">
-            <aside className="w-72 bg-[#8a3b42] rounded p-6 text-white">
+      <main className="max-w-6xl mx-auto p-4 sm:p-6">
+        <div className="flex flex-col md:flex-row gap-6">
+            <aside className="w-full md:w-72 bg-[#8a3b42] rounded p-4 md:p-6 text-white">
             <div className="flex items-center gap-4">
               <div className="h-16 w-16 rounded-full bg-white/10 flex items-center justify-center text-2xl font-bold">
                 {initial}
@@ -203,7 +211,7 @@ export default function AccountPage() {
 
             <hr className="my-4 border-t border-white/20" />
 
-            <div className="space-y-2">
+            <div className="flex md:flex-col gap-1 sm:gap-2 overflow-x-auto md:overflow-visible">
               <button
                 onClick={() => setTab("details")}
                 className={`w-full text-left px-3 py-2 rounded transition transform duration-150 ${tab === "details" ? "bg-black/30" : "hover:bg-black/20 hover:scale-105"}`}
@@ -225,7 +233,7 @@ export default function AccountPage() {
             </div>
           </aside>
 
-          <section className="flex-1 bg-[#F5E6D3] rounded-2xl shadow-lg p-8 text-[#140b08]">
+          <section className="flex-1 bg-[#F5E6D3] rounded-2xl shadow-lg p-4 sm:p-8 text-[#140b08]">
             {tab === "details" && (
               <div>
                 <h2 className="text-2xl font-semibold mb-4">Account details</h2>
@@ -253,7 +261,7 @@ export default function AccountPage() {
                 ) : (
                 <div className="space-y-4">
                   {/* Name fields */}
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium">Name</label>
                       <input
@@ -285,7 +293,7 @@ export default function AccountPage() {
                   </div>
 
                   {/* Demographic fields */}
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium">Age</label>
                       <input

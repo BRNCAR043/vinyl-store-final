@@ -35,14 +35,14 @@ export default function MostPopularSection() {
         <div className="mb-6">
           <h2 className="text-4xl md:text-5xl font-bold text-#ffeede font-anton mb-4">Most Popular</h2>
         </div>
-        <div className="grid grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {rows[0].map((item, idx) => (
             <div key={idx} className="h-full">
               <ProductCard product={{ id: String(idx), albumName: item.albumName, artist: item.artist, condition: item.condition, year: item.releaseYear as any, price: item.price, salePrice: item.salePrice }} />
             </div>
           ))}
         </div>
-        <div className="grid grid-cols-4 gap-6 mt-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mt-6">
           {rows[1].map((item, idx) => (
             <div key={idx} className="h-full">
               <ProductCard product={{ id: String(idx + 4), albumName: item.albumName, artist: item.artist, condition: item.condition, year: item.releaseYear as any, price: item.price, salePrice: item.salePrice }} />

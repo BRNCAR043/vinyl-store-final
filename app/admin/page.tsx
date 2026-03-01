@@ -132,7 +132,9 @@ export default function AdminPage() {
   return (
     <AdminGuard>
       <div className="min-h-screen bg-black text-white">
-        <div className="max-w-6xl mx-auto py-12 px-4 flex gap-8 items-start">
+        <div className="max-w-6xl mx-auto py-12 px-4">
+          <h1 className="text-3xl font-bold mb-4 text-white">Vinyl Admin</h1>
+          <div className="flex gap-8 items-start">
           <aside className="w-80 hidden md:block">
             <FilterSidebar
               priceSort={priceSort}
@@ -153,7 +155,6 @@ export default function AdminPage() {
             />
           </aside>
           <main className="flex-1">
-            <h1 className="text-2xl font-bold mb-8 text-[#ffeede]">Vinyl Admin</h1>
         {toast && (
           <div className="fixed top-6 right-6 bg-emerald-800 text-white px-5 py-3 rounded-lg shadow-lg z-50 flex items-center gap-3 animate-fade-in">
             <svg width="24" height="24" fill="none" viewBox="0 0 24 24" aria-hidden className="text-white"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm-1 15l-4-4 1.4-1.4L11 14.2l4.6-4.6L17 11l-6 6z" fill="currentColor"/></svg>
@@ -188,6 +189,7 @@ export default function AdminPage() {
               ))}
             </div>
           </main>
+          </div>
         </div>
       </div>
     </AdminGuard>
