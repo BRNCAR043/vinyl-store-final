@@ -1,0 +1,64 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /* Helper function */
+    function isAdmin() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && (
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'
+          || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true
+        );
+    }
+
+    /* VINYLS */
+    match /vinyls/{vinylId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    /* USERS */
+    match /users/{userId} {
+
+      // User manages their own profile
+      allow create, read, update, delete: if request.auth != null
+        && request.auth.uid == userId;
+
+      // Admin can read all users
+      allow read: if isAdmin();
+
+      /* ORDERS (subcollection) */
+      match /orders/{orderId} {
+        allow read, write: if request.auth != null
+          && request.auth.uid == userId;
+
+        // Admin can read any user's orders (needed for collectionGroup queries)
+        allow read: if isAdmin();
+      }
+    }
+
+    /* CARTS */
+    match /carts/{userId} {
+      allow read, write: if request.auth != null
+        && request.auth.uid == userId;
+    }
+
+    /* WISHLISTS */
+    match /wishlists/{userId} {
+      allow read, write: if request.auth != null
+        && request.auth.uid == userId;
+    }
+
+    /* COLLECTION GROUP — allow admin to query all orders across users */
+    match /{path=**}/orders/{orderId} {
+      allow read: if isAdmin();
+    }
+
+    /* DENY EVERYTHING ELSE */
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
