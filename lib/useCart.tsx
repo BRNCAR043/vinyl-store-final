@@ -1,3 +1,6 @@
+//This is the react hook that stores the cart, 
+// exposes helper functions and allows components to access cart
+
 "use client";
 import { useEffect, useState, useCallback } from "react";
 import { useAuthContext } from "./AuthContext";

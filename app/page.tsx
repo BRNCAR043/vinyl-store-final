@@ -4,25 +4,30 @@
 // This file is intentionally light-weight and composes smaller components.
 import HeroSection from "../components/home/HeroSection";
 import AISearchSection from "../components/home/AISearchSection";
-import Decorations from "../components/home/Decorations";
 import OnSaleSection from "../components/home/OnSaleSection";
 import PosterRow from "../components/home/PosterRow";
 import CrateFlipSection from "../components/home/CrateFlipSection";
-import MostPopularSection from "../components/home/MostPopularSection";
 import BrandNewSection from "../components/home/BrandNewSection";
-import ProductGrid from "../components/home/ProductGrid";
 import FairyLights from "../components/home/FairyLights";
+
+function RusticDivider() {
+  return <div className="rustic-divider my-4" />;
+}
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-gradient-to-b from-[#0b0202] via-[#0a0606] to-[#050505] text-white">
-      <div className="min-h-screen">
+    <main className="grain-overlay warm-vignette min-h-screen bg-gradient-to-b from-[#1a0f0a] via-[#120a07] to-[#0d0806] text-[#f5e6d3]">
+      <div className="min-h-screen relative">
         <FairyLights />
         <HeroSection />
+        <RusticDivider />
         <AISearchSection />
+        <RusticDivider />
         <CrateFlipSection />
+        <RusticDivider />
         <OnSaleSection />
         <PosterRow />
+        <RusticDivider />
         <BrandNewSection />
       </div>
     </main>

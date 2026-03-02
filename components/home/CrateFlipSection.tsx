@@ -475,24 +475,29 @@ export default function CrateFlipSection() {
 
   if (loading) {
     return (
-      <section className="py-16">
+      <section className="py-20 fade-in-section">
         <div className="max-w-7xl mx-auto px-6 text-center">
-          <h2 className="text-4xl md:text-5xl font-bold text-#ffeede font-anton mb-4">Dig Through the Decades</h2>
-          <div className="text-gray-400">Loading records...</div>
+          <p className="text-[#c9a86c] uppercase tracking-[0.3em] text-xs font-semibold mb-3 font-lora">Browse by Era</p>
+          <h2 className="text-4xl md:text-5xl font-bold section-heading heading-glow font-playfair mb-4">Dig Through the Decades</h2>
+          <div className="text-[#8a7a6a] font-lora italic">Loading records...</div>
         </div>
       </section>
     );
   }
 
   return (
-    <section className="py-16 overflow-hidden">
+    <section className="py-20 overflow-hidden fade-in-section">
       <div className="max-w-7xl mx-auto px-6">
-        <h2 className="text-4xl md:text-5xl font-bold text-#ffeede font-anton mb-4 text-center">
-          Dig Through the Decades
-        </h2>
-        <p className="text-gray-400 text-center mb-12 max-w-2xl mx-auto">
-          Explore vinyl from different eras — click records to flip through each crate
-        </p>
+        <div className="text-center mb-12">
+          <p className="text-[#c9a86c] uppercase tracking-[0.3em] text-xs font-semibold mb-3 font-lora">Browse by Era</p>
+          <h2 className="text-4xl md:text-5xl font-bold section-heading heading-glow font-playfair mb-3">
+            Dig Through the Decades
+          </h2>
+          <div className="w-16 h-0.5 bg-[#c9a86c]/40 mx-auto mb-4" />
+          <p className="text-[#b8a08a] text-lg max-w-2xl mx-auto font-lora italic">
+            Explore vinyl from different eras — click records to flip through each crate
+          </p>
+        </div>
 
         {/* Three crates in a row */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 justify-items-center">

@@ -1,4 +1,6 @@
 // lib/firebase-admin.ts
+// Initializes Firebase Admin SDK for server-side operations
+// This has full database access, ignores security rules, uses secret credentials
 import { initializeApp, getApps, cert, App } from "firebase-admin/app";
 import { getFirestore, Firestore } from "firebase-admin/firestore";
 

@@ -35,7 +35,7 @@ export default function FairyLights(): React.ReactElement {
                 className={`flex flex-col items-center gap-1 pointer-events-none bulb bulb-${i + 1}`}
               >
                 <span className="block h-4 w-px bg-white/80 rounded-sm" />
-                <span className="block bulb-dot w-2 h-2 md:w-2.5 md:h-2.5 rounded-full bg-yellow-200" />
+                <span className="block bulb-dot w-2 h-2 md:w-2.5 md:h-2.5 rounded-full" style={{ background: 'radial-gradient(circle, #ffe6a8 30%, #d4a853 100%)' }} />
               </li>
             ))}
           </ul>
@@ -47,8 +47,9 @@ export default function FairyLights(): React.ReactElement {
         @media (min-width: 768px) { .fairy-wrap { top: 72px; } }
 
         .bulb-dot {
-          box-shadow: 0 0 6px rgba(255, 240, 170, 0.9),
-            0 0 20px rgba(255, 235, 150, 0.28);
+          box-shadow: 0 0 8px rgba(212, 168, 83, 0.9),
+            0 0 24px rgba(212, 168, 83, 0.3),
+            0 0 48px rgba(201, 168, 108, 0.1);
           transform-origin: center;
           opacity: 0.9;
           animation: twinkle 3.2s ease-in-out infinite;

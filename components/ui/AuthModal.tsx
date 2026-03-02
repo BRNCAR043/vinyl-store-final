@@ -1,5 +1,5 @@
 "use client";
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import { signInWithGooglePopup, signInWithEmail, registerWithEmail } from "../../lib/auth";
 import { updateUserProfile } from "../../lib/userUtils";
 
@@ -39,6 +39,22 @@ function AuthModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [lastName, setLastName] = useState("");
   const [success, setSuccess] = useState<string | null>(null);
   const [showNoAccountPopup, setShowNoAccountPopup] = useState(false);
+
+  // Reset all state whenever the modal is opened
+  useEffect(() => {
+    if (open) {
+      setMode("login");
+      setEmail("");
+      setPassword("");
+      setFirstName("");
+      setLastName("");
+      setError(null);
+      setFieldErrors({});
+      setSuccess(null);
+      setShowNoAccountPopup(false);
+      setLoading(false);
+    }
+  }, [open]);
 
   if (!open) return null;
 

@@ -31,18 +31,20 @@ export default function ProductCard({ product }: Props) {
 
   const content = (
     <div className="w-full flex flex-col items-start">
-      <div className="w-full aspect-square mb-3 relative bg-gray-800 rounded overflow-hidden">
+      <div className="w-full aspect-square mb-3 relative bg-[#1a0f0a] rounded-lg overflow-hidden">
         {product.imageUrl ? (
-          <Image src={product.imageUrl} alt={albumName} fill style={{ objectFit: "cover" }} className="rounded" />
+          <Image src={product.imageUrl} alt={albumName} fill style={{ objectFit: "cover" }} className="rounded-lg" />
         ) : (
-          <div className="w-full h-full bg-gray-700 flex items-center justify-center text-gray-300">No image</div>
+          <div className="w-full h-full bg-gradient-to-br from-[#2a1a12] to-[#1a0f0a] flex items-center justify-center text-[#8a7a6a]">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1"><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="3" /></svg>
+          </div>
         )}
 
         {/* Tags: top-left on the album image */}
         {product.tags && product.tags.length > 0 && (
           <div className="absolute top-2 left-2 flex gap-2 z-20">
             {product.tags.map((t, idx) => (
-              <span key={idx} className="bg-[#8a3b42] text-[#ffeede] text-xs font-semibold px-2 py-1 rounded-md shadow-sm whitespace-nowrap">
+              <span key={idx} className="bg-[#7a2e35] text-[#f5e6d3] text-xs font-bold px-2 py-1 rounded shadow-sm whitespace-nowrap" style={{ fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif' }}>
                 {t}
               </span>
             ))}
@@ -53,15 +55,16 @@ export default function ProductCard({ product }: Props) {
           <WishlistButton vinylId={product.id!} compact />
         </div>
       </div>
-      <h3 className="font-bold text-lg mb-1 text-white" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{albumName}</h3>
-      <p className="text-gray-200 text-sm mb-1 truncate w-full">{artist}</p>
-      <p className="text-gray-200 text-xs mb-1">{condition} • {releaseYear}</p>
+      <h3 className="font-bold text-base mb-0.5 text-[#f5e6d3] font-playfair" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{albumName}</h3>
+      <p className="text-white/90 text-sm mb-0.5 truncate w-full">{artist}</p>
+      <p className="text-white/70 text-xs mb-1">{condition} &bull; {releaseYear}</p>
     </div>
   );
 
   return (
-    <div className="rounded-xl bg-[#8a3b42] p-4 flex flex-col items-start text-white transition-transform duration-200 hover:scale-105 min-h-[360px] relative transform scale-95 hover:scale-100">
-      {href ? (
+    <div
+      className="rounded-xl bg-[#8a3b42] p-4 flex flex-col items-start text-white transition-all duration-300 hover:scale-[1.03] hover:-translate-y-1 min-h-[360px] relative"
+    >      {href ? (
         <div onClick={navigateTo} role="link" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter") navigateTo(); }} className="w-full block cursor-pointer">
           {content}
         </div>
