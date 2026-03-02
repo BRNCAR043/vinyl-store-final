@@ -8,7 +8,7 @@ import { getVinylById } from "../../lib/firestoreVinyls";
 import type { Vinyl } from "../../types/vinyl";
 
 export default function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const { items, loading, remove, update, clear } = useCart();
+  const { items, loading, remove, update, clear } = useCart(); //calling the useCart hook to get cart items and functions to manipulate the cart
   const { user } = useAuthContext();
   const { open: openAuthModal } = useAuthModal();
   const router = useRouter();

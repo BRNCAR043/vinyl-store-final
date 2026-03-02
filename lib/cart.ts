@@ -1,3 +1,4 @@
+//These are helper functions which don't render UI, they just manipulate cart arrays. 
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "./firebase";
 

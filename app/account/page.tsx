@@ -229,7 +229,7 @@ function AccountContent() {
               </div>
               <div>
                 <div className="text-sm text-gray-200">Heya</div>
-                <div className="font-semibold text-lg">{user?.displayName ?? "Guest"}</div>
+                <div className="font-semibold text-lg">{`${firstName} ${lastName}`.trim() || user?.displayName || user?.email || "Guest"}</div>
               </div>
             </div>
 

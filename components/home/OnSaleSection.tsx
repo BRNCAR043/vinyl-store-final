@@ -28,12 +28,17 @@ export default function OnSaleSection() {
   const showViewMore = items.length > maxDisplay;
 
   return (
-    <section className="py-8">
+    <section className="py-20 fade-in-section">
       <div className="max-w-7xl mx-auto px-6">
-        <div className="mb-6">
-          <h2 className="text-4xl md:text-5xl font-bold text-#ffeede font-anton mb-4">On Sale</h2>
+        <div className="mb-10">
+          <div className="flex items-center gap-4 mb-2">
+            <span className="vintage-tag">Sale</span>
+            <div className="flex-1 h-px bg-gradient-to-r from-[#c9a86c]/30 to-transparent" />
+          </div>
+          <h2 className="text-4xl md:text-5xl font-bold section-heading heading-glow font-playfair">On Sale</h2>
+          <p className="text-[#b8a08a] mt-2 font-lora italic">Handpicked deals on quality vinyl</p>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-6">
           {displayRecords.map((item) => (
             <div key={item.id} className="h-full">
               <ProductCard product={item} />
@@ -41,12 +46,14 @@ export default function OnSaleSection() {
           ))}
         </div>
         {showViewMore && (
-          <div className="mt-8 flex justify-center">
+          <div className="mt-10 flex justify-center">
             <Link
               href="/vinyl?onSale=true"
-              className="px-8 py-3 rounded-full bg-[#8a3b42] text-[#ffeede] font-semibold text-lg hover:bg-[#6e2e34] transition-colors"
+              className="group inline-flex items-center gap-2 px-8 py-3 rounded-lg bg-[#7a2e35] text-[#f5e6d3] font-semibold text-base hover:bg-[#8a3b42] transition-all duration-200 font-playfair tracking-wide"
+              style={{ boxShadow: '0 2px 12px rgba(122,46,53,0.25)' }}
             >
               View More
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-hover:translate-x-1"><path d="M5 12h14M13 5l7 7-7 7" /></svg>
             </Link>
           </div>
         )}

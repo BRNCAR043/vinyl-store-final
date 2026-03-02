@@ -107,51 +107,99 @@ export default function HeroSection(): React.ReactElement {
 
   return (
     <section aria-label="Hero — Discover Rock Records" className="fade-in overflow-hidden relative">
-      <div className="max-w-7xl mx-auto md:py-12 py-8 px-4 relative z-10">
-        <div className="md:rounded-lg shadow-lg overflow-hidden relative">
-          {/* Unified slide container: all slides render the same way */}
-          <div
-            ref={containerRef}
-            onPointerDown={onPointerDown}
-            onPointerMove={onPointerMove}
-            onPointerUp={() => { finishDrag(); if (pointerIdRef.current != null) containerRef.current?.releasePointerCapture?.(pointerIdRef.current); }}
-            onPointerCancel={() => { finishDrag(); if (pointerIdRef.current != null) containerRef.current?.releasePointerCapture?.(pointerIdRef.current); }}
-            className="relative w-full h-[40vh] md:h-[48vh] overflow-hidden"
-          >
+      <div className="max-w-6xl mx-auto md:py-12 py-8 px-4 relative z-10">
+        {/* Rustic wooden frame wrapper */}
+        <div className="relative">
+          {/* Outer wood border */}
+          <div className="absolute -inset-2 md:-inset-3 rounded-xl pointer-events-none"
+            style={{
+              background: 'linear-gradient(135deg, #5c3d2e 0%, #3d2517 40%, #4a3122 70%, #5c3d2e 100%)',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08)',
+            }}
+          />
+          {/* Inner shadow frame */}
+          <div className="absolute -inset-0.5 rounded-lg pointer-events-none"
+            style={{
+              boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.6)',
+              border: '1px solid rgba(201,168,108,0.15)',
+            }}
+          />
+          <div className="md:rounded-lg shadow-lg overflow-hidden relative z-10">
+            {/* Unified slide container: all slides render the same way */}
             <div
-              ref={trackRef}
-              className="flex h-full"
+              ref={containerRef}
+              onPointerDown={onPointerDown}
+              onPointerMove={onPointerMove}
+              onPointerUp={() => { finishDrag(); if (pointerIdRef.current != null) containerRef.current?.releasePointerCapture?.(pointerIdRef.current); }}
+              onPointerCancel={() => { finishDrag(); if (pointerIdRef.current != null) containerRef.current?.releasePointerCapture?.(pointerIdRef.current); }}
+              className="relative w-full h-[40vh] md:h-[48vh] overflow-hidden bg-[#1a0f0a]"
+            >
+              <div
+                ref={trackRef}
+                className="flex h-full"
+                style={{
+                  width: `${(N + 2) * 100}%`,
+                  transform: `translate3d(${(-trackIndex * containerWidth + dragOffset) || 0}px, 0, 0)`,
+                  transition: (isDragging || disableTransition) ? 'none' : 'transform 420ms cubic-bezier(.2,.9,.2,1)',
+                }}
+              >
+                {/* clone last */}
+                <div className="w-full h-full flex-shrink-0 flex items-center justify-center" style={{ width: `${100 / (N + 2)}%` }}>
+                  <div className="w-full h-full bg-no-repeat bg-center" style={{ backgroundImage: `url('${SLIDES[N - 1]}')`, backgroundSize: 'contain' }} />
+                </div>
+
+                {SLIDES.map((src) => (
+                  <div key={src} className="w-full h-full flex-shrink-0 flex items-center justify-center" style={{ width: `${100 / (N + 2)}%` }}>
+                    <div className="w-full h-full bg-no-repeat bg-center" style={{ backgroundImage: `url('${src}')`, backgroundSize: 'contain' }} />
+                  </div>
+                ))}
+
+                {/* clone first */}
+                <div className="w-full h-full flex-shrink-0 flex items-center justify-center" style={{ width: `${100 / (N + 2)}%` }}>
+                  <div className="w-full h-full bg-no-repeat bg-center" style={{ backgroundImage: `url('${SLIDES[0]}')`, backgroundSize: 'contain' }} />
+                </div>
+              </div>
+
+              {/* Warm vignette on carousel */}
+              <div className="absolute inset-0 pointer-events-none" style={{ boxShadow: 'inset 0 0 60px rgba(13,8,6,0.5)' }} />
+            </div>
+
+            {/* Arrows — styled like worn metal buttons */}
+            <button aria-label="Previous slide" onClick={prev}
+              className="absolute left-3 top-1/2 -translate-y-1/2 z-30 w-10 h-10 flex items-center justify-center rounded-full transition-all duration-200 hover:scale-110"
               style={{
-                width: `${(N + 2) * 100}%`,
-                transform: `translate3d(${(-trackIndex * containerWidth + dragOffset) || 0}px, 0, 0)`,
-                transition: (isDragging || disableTransition) ? 'none' : 'transform 420ms cubic-bezier(.2,.9,.2,1)',
+                background: 'linear-gradient(135deg, rgba(61,37,23,0.85), rgba(90,60,40,0.85))',
+                border: '1px solid rgba(201,168,108,0.25)',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
+                color: '#f5e6d3',
               }}
             >
-              {/* clone last */}
-              <div className="w-full h-full flex-shrink-0 flex items-center justify-center" style={{ width: `${100 / (N + 2)}%` }}>
-                <div className="w-full h-full bg-no-repeat bg-center" style={{ backgroundImage: `url('${SLIDES[N - 1]}')`, backgroundSize: 'contain' }} />
-              </div>
-
-              {SLIDES.map((src) => (
-                <div key={src} className="w-full h-full flex-shrink-0 flex items-center justify-center" style={{ width: `${100 / (N + 2)}%` }}>
-                  <div className="w-full h-full bg-no-repeat bg-center" style={{ backgroundImage: `url('${src}')`, backgroundSize: 'contain' }} />
-                </div>
-              ))}
-
-              {/* clone first */}
-              <div className="w-full h-full flex-shrink-0 flex items-center justify-center" style={{ width: `${100 / (N + 2)}%` }}>
-                <div className="w-full h-full bg-no-repeat bg-center" style={{ backgroundImage: `url('${SLIDES[0]}')`, backgroundSize: 'contain' }} />
-              </div>
-            </div>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
+            </button>
+            <button aria-label="Next slide" onClick={next}
+              className="absolute right-3 top-1/2 -translate-y-1/2 z-30 w-10 h-10 flex items-center justify-center rounded-full transition-all duration-200 hover:scale-110"
+              style={{
+                background: 'linear-gradient(135deg, rgba(61,37,23,0.85), rgba(90,60,40,0.85))',
+                border: '1px solid rgba(201,168,108,0.25)',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
+                color: '#f5e6d3',
+              }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6" /></svg>
+            </button>
           </div>
+        </div>
 
-          {/* Arrows */}
-          <button aria-label="Previous slide" onClick={prev} className="absolute left-4 top-1/2 -translate-y-1/2 z-30 bg-black/40 hover:bg-black/60 text-white p-2 rounded-full">
-            ‹
-          </button>
-          <button aria-label="Next slide" onClick={next} className="absolute right-4 top-1/2 -translate-y-1/2 z-30 bg-black/40 hover:bg-black/60 text-white p-2 rounded-full">
-            ›
-          </button>
+        {/* Slide indicator dots — outside the frame */}
+        <div className="flex justify-center gap-2 mt-5">
+          {SLIDES.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => { setTrackIndex(i + 1); setIndex(i); }}
+              className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${i === index ? 'bg-[#c9a86c] scale-110' : 'bg-[#3d2a1e] hover:bg-[#5c3d2e]'}`}
+              aria-label={`Go to slide ${i + 1}`}
+            />
+          ))}
         </div>
       </div>
 
